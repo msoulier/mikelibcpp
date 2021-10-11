@@ -25,10 +25,10 @@ ifeq ($(OS),Linux)
 	LIBS+=-lboost_thread -lboost_system -lpthread
 endif
 
-all: libmike_pp.a
+all: libmikecpp.a
 
-libmike_pp.a: $(OBJS)
-	ar rc libmike_pp.a $(OBJS)
+libmikecpp.a: $(OBJS)
+	ar rc libmikecpp.a $(OBJS)
 
 mlogger.o: mlogger.cpp mlogger.hpp
 	$(CC) $(CFLAGS) -c mlogger.cpp
