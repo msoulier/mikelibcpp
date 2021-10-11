@@ -4,7 +4,7 @@
 //
 
 #include <ctime>
-#include "Util.h"
+#include "mlogger.hpp"
 
 //////////////////////////////////////////////////////////////////////
 // SimpleLogger - A first pass at a thread-safe logger.             //

@@ -7,7 +7,7 @@
 #define mlogger_hpp
 
 #include <stdio.h>
-#include <ostream>
+#include <iostream>
 #include <string>
 #include <queue>
 #include <boost/thread.hpp>

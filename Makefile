@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-Wall -DLINUX
-OBJS=logger.o
+CFLAGS=-Wall -DLINUX --std=c++11 -I.
+OBJS=mlogger.o
 LIBS=
 OS := $(shell uname -s)
 DEBUG=0
@@ -28,10 +28,10 @@ endif
 all: libmike_pp.a
 
 libmike_pp.a: $(OBJS)
-	ar rc libmike.a $(OBJS)
+	ar rc libmike_pp.a $(OBJS)
 
-mlogger.o: mlogger.c mlogger.h
-	$(CC) $(CFLAGS) -c mlogger.c
+mlogger.o: mlogger.cpp mlogger.hpp
+	$(CC) $(CFLAGS) -c mlogger.cpp
 
 tags:
 	ctags *.cpp *.hpp
