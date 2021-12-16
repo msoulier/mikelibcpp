@@ -16,13 +16,13 @@ endif
 ifeq ($(OS),Darwin)
 	LDFLAGS+=-L/usr/local/lib
 	CFLAGS+=-DDARWIN -I/usr/local/include
-	LIBS+=-lboost_thread-mt -lboost_system-mt -lpthread
+	LIBS+=-lpthread
 endif
 
 ifeq ($(OS),Linux)
 	LDFLAGS+=-L/usr/lib/x86_64-linux-gnu
 	CFLAGS+=-DLINUX -static
-	LIBS+=-lboost_thread -lboost_system -lpthread
+	LIBS+=-lpthread
 endif
 
 all: libmikecpp.a
