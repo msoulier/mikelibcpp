@@ -12,8 +12,8 @@
 //     logging.                                                     //
 //////////////////////////////////////////////////////////////////////
 
-MLoggerHandler::MLoggerHandler(boost::thread_specific_ptr<std::stringstream>& buffer,
-                               boost::mutex& mutex,
+MLoggerHandler::MLoggerHandler(std::stringstream& buffer,
+                               std::mutex& mutex,
                                std::ostream& ostream,
                                int threshold,
                                std::string prefix)

@@ -9,10 +9,10 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <queue>
-#include <boost/thread.hpp>
-#include <boost/thread/condition.hpp>
-#include <boost/thread/mutex.hpp>
+#include <mutex>
+#include <condition_variable>
 
 #define LOGLEVEL_TRACE 0
 #define LOGLEVEL_DEBUG 10
@@ -29,8 +29,8 @@
 class MLoggerHandler
 {
 public:
-    MLoggerHandler(boost::thread_specific_ptr<std::stringstream>& buffer,
-                   boost::mutex& mutex,
+    MLoggerHandler(std::stringstream& buffer,
+                   std::mutex& mutex,
                    std::ostream& ostream,
                    int threshold,
                    std::string prefix);
@@ -42,14 +42,16 @@ public:
     MLoggerHandler& operator <<(T input) {
         // Only log if the level is set above our threshold.
         if (m_threshold >= m_level) {
-            if (m_buffer.get() == NULL) {
-                m_buffer.reset(new std::stringstream());
-            }
-            if (m_buffer->str().length() == 0) {
-                *m_buffer << localDateTime() << " " << m_prefix << ": " << input;
+            std::lock_guard<std::mutex> lock(m_mutex);
+            // FIXME: not sure what this reset was for
+            //if (m_buffer.get() == NULL) {
+            //    m_buffer.reset(new std::stringstream());
+            //}
+            if (m_buffer.str().length() == 0) {
+                m_buffer << localDateTime() << " " << m_prefix << ": " << input;
             }
             else {
-                *m_buffer << input;
+                m_buffer << input;
             }
         }
         return *this;
@@ -58,20 +60,20 @@ public:
     std::ostream& operator <<(std::ostream& (*f)(std::ostream&)) {
         // Only log if the level is set above our threshold.
         if (m_threshold >= m_level) {
-            boost::lock_guard<boost::mutex> lock{m_mutex};
+            std::lock_guard<std::mutex> lock(m_mutex);
             // Flush the buffer
-            m_ostream << m_buffer->str();
+            m_ostream << m_buffer.str();
             f(m_ostream);
             // Clear the buffer
-            m_buffer->str("");
+            m_buffer.str("");
         }
         return m_ostream;
     }
 private:
     // The thread-safe buffer where the logs are composed.
-    boost::thread_specific_ptr<std::stringstream>& m_buffer;
+    std::stringstream& m_buffer;
     // A mutex passed in from the main logger for synchronization.
-    boost::mutex& m_mutex;
+    std::mutex& m_mutex;
     // The logging level.
     int m_level;
     // The output stream.
@@ -118,7 +120,7 @@ private:
     // The output stream for the logger.
     std::ostream& m_ostream;
     // The mutex used for synchronization.
-    boost::mutex m_mutex;
+    std::mutex m_mutex;
     // Trace handler
     MLoggerHandler m_trace_handler;
     // Debug handler
@@ -130,7 +132,7 @@ private:
     // Error handler
     MLoggerHandler m_error_handler;
     // The thread-safe buffer where the logs are composed.
-    boost::thread_specific_ptr<std::stringstream> m_buffer;
+    std::stringstream m_buffer;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -149,9 +151,9 @@ public:
     // queue was empty.
     void dequeue(T& item);
 private:
-    boost::mutex m_mutex;
-    boost::condition m_empty;
-    boost::condition m_full;
+    std::mutex m_mutex;
+    std::condition_variable m_empty;
+    std::condition_variable m_full;
     std::queue<T> m_queue;
     unsigned int m_maxsize;
 };
@@ -165,10 +167,11 @@ SafeQueue<T>::~SafeQueue() { }
 template<class T>
 void SafeQueue<T>::enqueue(T& item) {
     // Synchronize. No unlock needed due to unique_lock.
-    boost::lock_guard<boost::mutex> lock{m_mutex};
+    std::lock_guard<std::mutex> lock(m_mutex);
     if ((m_maxsize != 0) && (m_queue.size() == m_maxsize)) {
         // Queue full. Can't push more on. Block until there's room.
-        m_full.wait(m_mutex);
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_full.wait(lock);
     }
     else {
         // Add to m_queue and notify the reader if it's waiting.
@@ -180,10 +183,11 @@ void SafeQueue<T>::enqueue(T& item) {
 template<class T>
 void SafeQueue<T>::dequeue(T& item) {
     // Synchronize. No unlock needed due to unique lock.
-    boost::lock_guard<boost::mutex> lock{m_mutex};
+    std::lock_guard<std::mutex> lock(m_mutex);
     if (m_queue.empty()) {
         // Wait until something is put on it.
-        m_empty.wait(m_mutex);
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_empty.wait(lock);
     }
     // Pull the item off and notify writer if it's waiting on full cond.
     item = m_queue.front();
