@@ -13,6 +13,7 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#include <vector>
 
 #define LOGLEVEL_TRACE 0
 #define LOGLEVEL_DEBUG 10
@@ -22,24 +23,50 @@
 
 //////////////////////////////////////////////////////////////////////
 // MLogger - A second pass at a C++, thread-safe logger.            //
-//     Note that it returns MLoggerHandler objects to do the actual //
+//     Note that it returns MLoggerEmitter objects to do the actual //
 //     logging.                                                     //
 //////////////////////////////////////////////////////////////////////
 
+/*
+ * This is the base class for all logging handlers.
+ */
 class MLoggerHandler
 {
 public:
-    MLoggerHandler(std::stringstream& buffer,
+    MLoggerHandler();
+    virtual ~MLoggerHandler() = default;
+    void operator<< (std::string buffer);
+private:
+    virtual void handle(std::string buffer);
+};
+
+/*
+ * A stderr logger implementation.
+ */
+class MLoggerStderrHandler: public MLoggerHandler
+{
+public:
+    MLoggerStderrHandler();
+    ~MLoggerStderrHandler();
+private:
+    void handle(std::string buffer);
+};
+
+class MLoggerEmitter
+{
+public:
+    MLoggerEmitter(std::stringstream& buffer,
                    std::mutex& mutex,
                    std::ostream& ostream,
                    int threshold,
-                   std::string prefix);
-    ~MLoggerHandler();
+                   std::string prefix,
+                   std::vector<MLoggerHandler*> &handlers);
+    ~MLoggerEmitter();
     void setLevel(int level);
 
     template <class T>
     // For handling << from any object.
-    MLoggerHandler& operator <<(T input) {
+    MLoggerEmitter& operator <<(T input) {
         // Only log if the level is set above our threshold.
         if (m_threshold >= m_level) {
             std::lock_guard<std::mutex> lock(m_mutex);
@@ -61,9 +88,18 @@ public:
         // Only log if the level is set above our threshold.
         if (m_threshold >= m_level) {
             std::lock_guard<std::mutex> lock(m_mutex);
+            // Loop on the handlers and send the buffer to each.
+            for (auto handler : m_handlers) {
+                *handler << m_buffer.str();
+            }
+
             // Flush the buffer
-            m_ostream << m_buffer.str();
-            f(m_ostream);
+            //m_ostream << m_buffer.str();
+            //f(m_ostream);
+
+            //MLoggerStderrHandler handler;
+            //handler << m_buffer.str();
+
             // Clear the buffer
             m_buffer.str("");
         }
@@ -84,12 +120,14 @@ private:
     std::string m_prefix;
     // Return the current date and time as a localized string.
     const std::string localDateTime();
+    // A reference to the MLogger class' vector of handlers.
+    std::vector<MLoggerHandler*>& m_handlers;
 };
 
 /*
  * The MLogger (Mike-logger) is a thread-safe C++ logger using the iostream operators.
  * To use it, you must invoke a logging level handler which will return an
- * MLoggerHandler reference, and then terminate your line with std::endl to ensure
+ * MLoggerEmitter reference, and then terminate your line with std::endl to ensure
  * that the buffer is flushed and the line terminated with a newline.
  */
 class MLogger
@@ -103,15 +141,22 @@ public:
     // Get the current logging level
     int getLevel();
     // Convenience methods for trace level log.
-    MLoggerHandler& trace();
+    MLoggerEmitter& trace();
     // Convenience methods for debug level log
-    MLoggerHandler& debug();
+    MLoggerEmitter& debug();
     // Convenience methods for info level log
-    MLoggerHandler& info();
+    MLoggerEmitter& info();
     // Convenience methods for warning level log
-    MLoggerHandler& warn();
+    MLoggerEmitter& warn();
     // Convenicence methods for error level log
-    MLoggerHandler& error();
+    MLoggerEmitter& error();
+    // Add a new handler. Takes ownership of handler object and
+    // deletes it when done.
+    void addHandler(MLoggerHandler* handler);
+    // Clear all handlers.
+    void clearHandlers();
+    // Initialize the logger with default settings.
+    void setDefaults();
 private:
     // The logger name.
     std::string m_name;
@@ -122,17 +167,19 @@ private:
     // The mutex used for synchronization.
     std::mutex m_mutex;
     // Trace handler
-    MLoggerHandler m_trace_handler;
+    MLoggerEmitter m_trace_handler;
     // Debug handler
-    MLoggerHandler m_debug_handler;
+    MLoggerEmitter m_debug_handler;
     // Info handler
-    MLoggerHandler m_info_handler;
+    MLoggerEmitter m_info_handler;
     // Warn handler
-    MLoggerHandler m_warn_handler;
+    MLoggerEmitter m_warn_handler;
     // Error handler
-    MLoggerHandler m_error_handler;
+    MLoggerEmitter m_error_handler;
     // The thread-safe buffer where the logs are composed.
     std::stringstream m_buffer;
+    // A vector of MLoggerHandler* objects.
+    std::vector<MLoggerHandler*> m_handlers;
 };
 
 //////////////////////////////////////////////////////////////////////

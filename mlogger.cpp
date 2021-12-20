@@ -6,32 +6,64 @@
 #include <ctime>
 #include "mlogger.hpp"
 
-//////////////////////////////////////////////////////////////////////
-// MLogger - A second pass at a C++, thread-safe logger.            //
-//     Note that it returns MLoggerHandler objects to do the actual //
-//     logging.                                                     //
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// MLogger - A second pass at a C++, thread-safe logger.             //
+//     Note that it returns MLoggerEmitter objects to do the actual //
+//     logging.                                                      //
+///////////////////////////////////////////////////////////////////////
 
-MLoggerHandler::MLoggerHandler(std::stringstream& buffer,
+/*
+ * The MLoggerHandler base class.
+ */
+MLoggerHandler::MLoggerHandler()
+{}
+
+void MLoggerHandler::operator<< (std::string buffer)
+{
+    handle(buffer);
+}
+
+void MLoggerHandler::handle(std::string buffer)
+{
+    std::cerr << "This should never be run" << std::endl;
+}
+
+/*
+ * An implementation of a MLoggerHandler that logs to stderr.
+ */
+MLoggerStderrHandler::MLoggerStderrHandler()
+{}
+
+MLoggerStderrHandler::~MLoggerStderrHandler()
+{}
+
+void MLoggerStderrHandler::handle(std::string buffer)
+{
+    std::cerr << buffer << std::endl;
+}
+
+MLoggerEmitter::MLoggerEmitter(std::stringstream& buffer,
                                std::mutex& mutex,
                                std::ostream& ostream,
                                int threshold,
-                               std::string prefix)
+                               std::string prefix,
+                               std::vector<MLoggerHandler*> &handlers)
     : m_buffer(buffer)
     , m_mutex(mutex)
     , m_level(LOGLEVEL_INFO)
     , m_ostream(ostream)
     , m_threshold(threshold)
     , m_prefix(prefix)
+    , m_handlers(handlers)
 { }
 
-MLoggerHandler::~MLoggerHandler() { }
+MLoggerEmitter::~MLoggerEmitter() { }
 
-void MLoggerHandler::setLevel(int level) {
+void MLoggerEmitter::setLevel(int level) {
     m_level = level;
 }
 
-const std::string MLoggerHandler::localDateTime() {
+const std::string MLoggerEmitter::localDateTime() {
     const char *format = "%b %d %Y @ %X %Z";
     std::time_t t = std::time(NULL);
     char buffer[128];
@@ -47,16 +79,18 @@ MLogger::MLogger(std::string name)
     : m_name(name)
     , m_level(LOGLEVEL_INFO)
     , m_ostream(std::cerr)
-    , m_trace_handler(MLoggerHandler(m_buffer, m_mutex, m_ostream, LOGLEVEL_TRACE, "TRACE"))
-    , m_debug_handler(MLoggerHandler(m_buffer, m_mutex, m_ostream, LOGLEVEL_DEBUG, "DEBUG"))
-    , m_info_handler(MLoggerHandler(m_buffer, m_mutex, m_ostream, LOGLEVEL_INFO, "INFO"))
-    , m_warn_handler(MLoggerHandler(m_buffer, m_mutex, m_ostream, LOGLEVEL_WARN, "WARN"))
-    , m_error_handler(MLoggerHandler(m_buffer, m_mutex, m_ostream, LOGLEVEL_ERROR, "ERROR"))
+    , m_trace_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_TRACE, "TRACE", m_handlers))
+    , m_debug_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_DEBUG, "DEBUG", m_handlers))
+    , m_info_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_INFO, "INFO", m_handlers))
+    , m_warn_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_WARN, "WARN", m_handlers))
+    , m_error_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_ERROR, "ERROR", m_handlers))
     { }
 
 MLogger::MLogger() : MLogger("No name") { }
 
-MLogger::~MLogger() { }
+MLogger::~MLogger() {
+    clearHandlers();
+}
 
 int MLogger::getLevel() {
     return m_level;
@@ -72,22 +106,42 @@ void MLogger::setLevel(int level) {
     m_error_handler.setLevel(level);
 }
 
-MLoggerHandler& MLogger::trace() {
+MLoggerEmitter& MLogger::trace() {
     return m_trace_handler;
 }
 
-MLoggerHandler& MLogger::debug() {
+MLoggerEmitter& MLogger::debug() {
     return m_debug_handler;
 }
 
-MLoggerHandler& MLogger::info() {
+MLoggerEmitter& MLogger::info() {
     return m_info_handler;
 }
 
-MLoggerHandler& MLogger::warn() {
+MLoggerEmitter& MLogger::warn() {
     return m_warn_handler;
 }
 
-MLoggerHandler& MLogger::error() {
+MLoggerEmitter& MLogger::error() {
     return m_error_handler;
+}
+
+void MLogger::addHandler(MLoggerHandler* handler) {
+    m_handlers.push_back(handler);
+}
+
+void MLogger::clearHandlers() {
+    // delete all handlers
+    for (auto handler : m_handlers) {
+        delete handler;
+    }
+    m_handlers.clear();
+}
+
+void MLogger::setDefaults() {
+    // Use a MLoggerStderrHandler
+    MLoggerStderrHandler *handler = new MLoggerStderrHandler();
+    addHandler(handler);
+    // Defaut log level is info
+    setLevel(LOGLEVEL_INFO);
 }
