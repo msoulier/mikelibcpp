@@ -12,12 +12,16 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <stdio.h>
+#include <stdarg.h>
 
 #define LOGLEVEL_TRACE 0
 #define LOGLEVEL_DEBUG 10
 #define LOGLEVEL_INFO 20
 #define LOGLEVEL_WARN 30
 #define LOGLEVEL_ERROR 40
+
+#define MLOGGER_BUFSIZE 1024
 
 //////////////////////////////////////////////////////////////////////
 // MLogger - A second pass at a C++, thread-safe logger.            //
@@ -56,9 +60,16 @@ private:
 class MLoggerFileHandler: public MLoggerHandler
 {
 public:
-    MLoggerFileHandler();
+    MLoggerFileHandler(std::string path,
+                       size_t rotation_filesize,
+                       size_t rotation_filetime,
+                       bool post_compress);
     ~MLoggerFileHandler();
 private:
+    std::string m_path;
+    size_t m_rotation_filesize;
+    size_t m_rotation_filetime;
+    bool m_post_compress;
     void handle(std::string buffer);
 };
 
@@ -80,10 +91,6 @@ public:
         // Only log if the level is set above our threshold.
         if (m_threshold >= m_level) {
             std::lock_guard<std::mutex> lock(m_mutex);
-            // FIXME: not sure what this reset was for
-            //if (m_buffer.get() == NULL) {
-            //    m_buffer.reset(new std::stringstream());
-            //}
             if (m_buffer.str().length() == 0) {
                 m_buffer << localDateTime() << " " << m_prefix << ": " << input;
             }
@@ -102,14 +109,6 @@ public:
             for (auto handler : m_handlers) {
                 *handler << m_buffer.str();
             }
-
-            // Flush the buffer
-            //m_ostream << m_buffer.str();
-            //f(m_ostream);
-
-            //MLoggerStderrHandler handler;
-            //handler << m_buffer.str();
-
             // Clear the buffer
             m_buffer.str("");
         }
@@ -146,20 +145,29 @@ public:
     MLogger();
     MLogger(std::string name);
     ~MLogger();
+    // Block copy constructor and assignment operator.
+    MLogger(MLogger& source) = delete;
+    MLogger& operator=(const MLogger& source) = delete;
     // Set the current logging level
     void setLevel(int level);
     // Get the current logging level
     int getLevel();
-    // Convenience methods for trace level log.
+    // Convenience methods for trace level log with iostream.
     MLoggerEmitter& trace();
-    // Convenience methods for debug level log
+    // Convenience methods for debug level log with iostream.
     MLoggerEmitter& debug();
-    // Convenience methods for info level log
+    // Convenience methods for info level log with iostream.
     MLoggerEmitter& info();
-    // Convenience methods for warning level log
+    // Convenience methods for warning level log with iostream.
     MLoggerEmitter& warn();
-    // Convenicence methods for error level log
+    // Convenicence methods for error level log with iostream.
     MLoggerEmitter& error();
+    // Log printf style at called level.
+    void trace(const char *fmt, ...);
+    void debug(const char *fmt, ...);
+    void info(const char *fmt, ...);
+    void warn(const char *fmt, ...);
+    void error(const char *fmt, ...);
     // Add a new handler. Takes ownership of the object.
     void addHandler(MLoggerHandler* handler);
     // Clear all handlers.
@@ -189,6 +197,8 @@ private:
     std::stringstream m_buffer;
     // A vector of MLoggerHandler* objects.
     std::vector<MLoggerHandler*> m_handlers;
+    // A print method for handling va_args in one place.
+    std::string sprintf(const char *fmt, va_list args);
 };
 
 #endif /* mlogger_hpp */

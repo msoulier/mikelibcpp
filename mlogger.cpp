@@ -4,6 +4,8 @@
 //
 
 #include <ctime>
+#include <assert.h>
+
 #include "mlogger.hpp"
 
 ///////////////////////////////////////////////////////////////////////
@@ -26,6 +28,7 @@ void MLoggerHandler::operator<< (std::string buffer)
 void MLoggerHandler::handle(std::string buffer)
 {
     std::cerr << "This should never be run" << std::endl;
+    assert(0);
 }
 
 /*
@@ -45,8 +48,20 @@ void MLoggerStderrHandler::handle(std::string buffer)
 /*
  * An implementation of an MLoggerHandler that logs to a file.
  */
-MLoggerFileHandler::MLoggerFileHandler()
-{}
+MLoggerFileHandler::MLoggerFileHandler(std::string path,
+                                       size_t rotation_filesize,
+                                       size_t rotation_filetime,
+                                       bool post_compress)
+    : m_path(path)
+    , m_rotation_filesize(rotation_filesize)
+    , m_rotation_filetime(rotation_filetime)
+    , m_post_compress(post_compress)
+{
+    std::cout << "m_path is " << m_path << std::endl;
+    std::cout << "m_rotation_filesize is " << m_rotation_filesize << std::endl;
+    std::cout << "m_rotation_filetime is " << m_rotation_filetime << std::endl;
+    std::cout << "m_post_compress is " << m_post_compress << std::endl;
+}
 
 MLoggerFileHandler::~MLoggerFileHandler()
 {}
@@ -140,6 +155,57 @@ MLoggerEmitter& MLogger::warn() {
 
 MLoggerEmitter& MLogger::error() {
     return m_error_handler;
+}
+
+std::string MLogger::sprintf(const char *fmt, va_list args)
+{
+    char buffer[MLOGGER_BUFSIZE];
+    // Add to buffer here
+    if (vsnprintf(buffer, MLOGGER_BUFSIZE, fmt, args) > MLOGGER_BUFSIZE) {
+        fprintf(stderr, "MLogger::printf: output truncated\n");
+    }
+    std::string msg(buffer);
+    return msg;
+}
+
+void MLogger::trace(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    m_trace_handler << this->sprintf(fmt, args) << std::endl;
+    va_end(args);
+}
+
+void MLogger::debug(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    m_debug_handler << this->sprintf(fmt, args) << std::endl;
+    va_end(args);
+}
+
+void MLogger::info(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    m_info_handler << this->sprintf(fmt, args) << std::endl;
+    va_end(args);
+}
+
+void MLogger::warn(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    m_warn_handler << this->sprintf(fmt, args) << std::endl;
+    va_end(args);
+}
+
+void MLogger::error(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    m_error_handler << this->sprintf(fmt, args) << std::endl;
+    va_end(args);
 }
 
 void MLogger::clearHandlers() {

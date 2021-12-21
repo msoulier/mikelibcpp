@@ -28,12 +28,17 @@ void testsafequeue(void) {
 }
 
 void testlogger(void) {
-    std::cout << "Testing MLogger" << std::endl;
+    std::cout << "Testing MLogger iostream interface" << std::endl;
 
     MLogger logger;
     logger.setDefaults();
 
     logger.info() << "Hello at info level" << std::endl;
+
+    std::cout << std::endl;
+    std::cout << "Testing MLogger printf interface" << std::endl;
+
+    logger.info("Hello at %s level", "info");
 }
 
 int main(void) {
