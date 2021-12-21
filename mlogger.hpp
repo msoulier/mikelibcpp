@@ -50,6 +50,18 @@ private:
     void handle(std::string buffer);
 };
 
+/*
+ * A rotating file handler.
+ */
+class MLoggerFileHandler: public MLoggerHandler
+{
+public:
+    MLoggerFileHandler();
+    ~MLoggerFileHandler();
+private:
+    void handle(std::string buffer);
+};
+
 class MLoggerEmitter
 {
 public:
@@ -148,13 +160,8 @@ public:
     MLoggerEmitter& warn();
     // Convenicence methods for error level log
     MLoggerEmitter& error();
-    // Add a new handler. Templated to own the pointer.
-    // Example: addHandler<MLoggerStderrHandler>();
-    template <typename T>
-    void addHandler() {
-        T *handler = new T();
-        m_handlers.push_back(handler);
-    };
+    // Add a new handler. Takes ownership of the object.
+    void addHandler(MLoggerHandler* handler);
     // Clear all handlers.
     void clearHandlers();
     // Initialize the logger with default settings.

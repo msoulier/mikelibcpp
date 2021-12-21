@@ -29,7 +29,7 @@ void MLoggerHandler::handle(std::string buffer)
 }
 
 /*
- * An implementation of a MLoggerHandler that logs to stderr.
+ * An implementation of an MLoggerHandler that logs to stderr.
  */
 MLoggerStderrHandler::MLoggerStderrHandler()
 {}
@@ -42,6 +42,22 @@ void MLoggerStderrHandler::handle(std::string buffer)
     std::cerr << buffer << std::endl;
 }
 
+/*
+ * An implementation of an MLoggerHandler that logs to a file.
+ */
+MLoggerFileHandler::MLoggerFileHandler()
+{}
+
+MLoggerFileHandler::~MLoggerFileHandler()
+{}
+
+void MLoggerFileHandler::handle(std::string buffer)
+{
+}
+
+/*
+ * The MLoggerEmitters
+ */
 MLoggerEmitter::MLoggerEmitter(std::stringstream& buffer,
                                std::mutex& mutex,
                                std::ostream& ostream,
@@ -134,9 +150,14 @@ void MLogger::clearHandlers() {
     m_handlers.clear();
 }
 
+void MLogger::addHandler(MLoggerHandler* handler) {
+    m_handlers.push_back(handler);
+}
+
 void MLogger::setDefaults() {
     // Use a MLoggerStderrHandler
-    addHandler<MLoggerStderrHandler>();
+    MLoggerStderrHandler *handler = new MLoggerStderrHandler();
+    addHandler(handler);
     // Defaut log level is info
     setLevel(LOGLEVEL_INFO);
 }
