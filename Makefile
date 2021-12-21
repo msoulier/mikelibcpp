@@ -41,3 +41,4 @@ test: all
 
 clean:
 	rm -f *.a *.o
+	(cd t && make clean)

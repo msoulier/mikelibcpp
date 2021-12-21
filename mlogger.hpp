@@ -150,9 +150,13 @@ public:
     MLoggerEmitter& warn();
     // Convenicence methods for error level log
     MLoggerEmitter& error();
-    // Add a new handler. Takes ownership of handler object and
-    // deletes it when done.
-    void addHandler(MLoggerHandler* handler);
+    // Add a new handler. Templated to own the pointer.
+    // Example: addHandler<MLoggerStderrHandler>();
+    template <typename T>
+    void addHandler() {
+        T *handler = new T();
+        m_handlers.push_back(handler);
+    };
     // Clear all handlers.
     void clearHandlers();
     // Initialize the logger with default settings.

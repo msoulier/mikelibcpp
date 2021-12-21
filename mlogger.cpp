@@ -126,10 +126,6 @@ MLoggerEmitter& MLogger::error() {
     return m_error_handler;
 }
 
-void MLogger::addHandler(MLoggerHandler* handler) {
-    m_handlers.push_back(handler);
-}
-
 void MLogger::clearHandlers() {
     // delete all handlers
     for (auto handler : m_handlers) {
@@ -140,8 +136,7 @@ void MLogger::clearHandlers() {
 
 void MLogger::setDefaults() {
     // Use a MLoggerStderrHandler
-    MLoggerStderrHandler *handler = new MLoggerStderrHandler();
-    addHandler(handler);
+    addHandler<MLoggerStderrHandler>();
     // Defaut log level is info
     setLevel(LOGLEVEL_INFO);
 }
