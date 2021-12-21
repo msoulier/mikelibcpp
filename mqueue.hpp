@@ -19,11 +19,14 @@ public:
     // Instantiate a new queue. 0 maxsize means unlimited.
     SafeQueue(unsigned int maxsize = 0);
     ~SafeQueue(void);
-    // Enqueue a new T. Returns true on success, false if the queue is full.
-    void enqueue(T& item);
-    // Dequeue a new T. Returns true if something was dequeued, false if the
-    // queue was empty.
-    void dequeue(T& item);
+    // Enqueue a new T. If enqueue would cause it to exceed maxsize,
+    // block until there is room on the queue.
+    void enqueue(const T& item);
+    // Dequeue a new T and return it. If the queue is empty, wait on it
+    // until it is not empty.
+    T& dequeue(void);
+    // Return size of the queue.
+    int size(void);
 private:
     std::mutex m_mutex;
     std::condition_variable m_empty;
@@ -39,7 +42,7 @@ template<class T>
 SafeQueue<T>::~SafeQueue() { }
 
 template<class T>
-void SafeQueue<T>::enqueue(T& item) {
+void SafeQueue<T>::enqueue(const T& item) {
     // Synchronize. No unlock needed due to unique_lock.
     std::lock_guard<std::mutex> lock(m_mutex);
     if ((m_maxsize != 0) && (m_queue.size() == m_maxsize)) {
@@ -55,7 +58,7 @@ void SafeQueue<T>::enqueue(T& item) {
 }
 
 template<class T>
-void SafeQueue<T>::dequeue(T& item) {
+T& SafeQueue<T>::dequeue(void) {
     // Synchronize. No unlock needed due to unique lock.
     std::lock_guard<std::mutex> lock(m_mutex);
     if (m_queue.empty()) {
@@ -64,9 +67,15 @@ void SafeQueue<T>::dequeue(T& item) {
         m_empty.wait(lock);
     }
     // Pull the item off and notify writer if it's waiting on full cond.
-    item = m_queue.front();
+    T& item = m_queue.front();
     m_queue.pop();
     m_full.notify_all();
+    return item;
+}
+
+template<class T>
+int SafeQueue<T>::size(void) {
+    return m_queue.size();
 }
 
 #endif /* mqueue_hpp */
