@@ -26,13 +26,15 @@ public:
     // until it is not empty.
     T& dequeue(void);
     // Return size of the queue.
-    int size(void);
+    size_t size(void) const;
+    // Return the maxsize of the queue.
+    size_t maxsize(void) const;
 private:
     std::mutex m_mutex;
     std::condition_variable m_empty;
     std::condition_variable m_full;
     std::queue<T> m_queue;
-    unsigned int m_maxsize;
+    size_t m_maxsize;
 };
 
 template<class T>
@@ -74,8 +76,13 @@ T& SafeQueue<T>::dequeue(void) {
 }
 
 template<class T>
-int SafeQueue<T>::size(void) {
+size_t SafeQueue<T>::size(void) const {
     return m_queue.size();
+}
+
+template<class T>
+size_t SafeQueue<T>::maxsize(void) const {
+    return m_maxsize;
 }
 
 #endif /* mqueue_hpp */

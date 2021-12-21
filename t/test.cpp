@@ -7,6 +7,9 @@ void testsafequeue(void) {
     std::cout << "Testing SafeQueue with ints" << std::endl;
 
     SafeQueue<int> queue(10);
+
+    std::cout << "maxsize of queue is " << queue.maxsize() << std::endl;
+
     queue.enqueue(1);
     queue.enqueue(2);
     queue.enqueue(3);
