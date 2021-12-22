@@ -15,13 +15,15 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define LOGLEVEL_TRACE 0
-#define LOGLEVEL_DEBUG 10
-#define LOGLEVEL_INFO 20
-#define LOGLEVEL_WARN 30
-#define LOGLEVEL_ERROR 40
-
 #define MLOGGER_BUFSIZE 1024
+
+enum MLoggerVerbosity {
+    trace=0,
+    debug=10,
+    info=20,
+    warn=30,
+    error=40
+};
 
 //////////////////////////////////////////////////////////////////////
 // MLogger - A second pass at a C++, thread-safe logger.            //
@@ -79,11 +81,11 @@ public:
     MLoggerEmitter(std::stringstream& buffer,
                    std::mutex& mutex,
                    std::ostream& ostream,
-                   int threshold,
+                   MLoggerVerbosity threshold,
                    std::string prefix,
                    std::vector<MLoggerHandler*> &handlers);
     ~MLoggerEmitter();
-    void setLevel(int level);
+    void setLevel(MLoggerVerbosity level);
 
     template <class T>
     // For handling << from any object.
@@ -120,11 +122,11 @@ private:
     // A mutex passed in from the main logger for synchronization.
     std::mutex& m_mutex;
     // The logging level.
-    int m_level;
+    MLoggerVerbosity m_level;
     // The output stream.
     std::ostream& m_ostream;
     // The threshold for logging for this handler.
-    int m_threshold;
+    MLoggerVerbosity m_threshold;
     // The string prefix for logging.
     std::string m_prefix;
     // Return the current date and time as a localized string.
@@ -149,9 +151,9 @@ public:
     MLogger(MLogger& source) = delete;
     MLogger& operator=(const MLogger& source) = delete;
     // Set the current logging level
-    void setLevel(int level);
+    void setLevel(MLoggerVerbosity level);
     // Get the current logging level
-    int getLevel();
+    MLoggerVerbosity getLevel();
     // Convenience methods for trace level log with iostream.
     MLoggerEmitter& trace();
     // Convenience methods for debug level log with iostream.
@@ -178,7 +180,7 @@ private:
     // The logger name.
     std::string m_name;
     // The current log level.
-    int m_level;
+    MLoggerVerbosity m_level;
     // The output stream for the logger.
     std::ostream& m_ostream;
     // The mutex used for synchronization.

@@ -76,12 +76,12 @@ void MLoggerFileHandler::handle(std::string buffer)
 MLoggerEmitter::MLoggerEmitter(std::stringstream& buffer,
                                std::mutex& mutex,
                                std::ostream& ostream,
-                               int threshold,
+                               MLoggerVerbosity threshold,
                                std::string prefix,
                                std::vector<MLoggerHandler*> &handlers)
     : m_buffer(buffer)
     , m_mutex(mutex)
-    , m_level(LOGLEVEL_INFO)
+    , m_level(MLoggerVerbosity::info)
     , m_ostream(ostream)
     , m_threshold(threshold)
     , m_prefix(prefix)
@@ -90,7 +90,7 @@ MLoggerEmitter::MLoggerEmitter(std::stringstream& buffer,
 
 MLoggerEmitter::~MLoggerEmitter() { }
 
-void MLoggerEmitter::setLevel(int level) {
+void MLoggerEmitter::setLevel(MLoggerVerbosity level) {
     m_level = level;
 }
 
@@ -108,13 +108,13 @@ const std::string MLoggerEmitter::localDateTime() {
 
 MLogger::MLogger(std::string name)
     : m_name(name)
-    , m_level(LOGLEVEL_INFO)
+    , m_level(MLoggerVerbosity::info)
     , m_ostream(std::cerr)
-    , m_trace_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_TRACE, "TRACE", m_handlers))
-    , m_debug_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_DEBUG, "DEBUG", m_handlers))
-    , m_info_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_INFO, "INFO", m_handlers))
-    , m_warn_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_WARN, "WARN", m_handlers))
-    , m_error_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, LOGLEVEL_ERROR, "ERROR", m_handlers))
+    , m_trace_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::trace, "TRACE", m_handlers))
+    , m_debug_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::debug, "DEBUG", m_handlers))
+    , m_info_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::info, "INFO", m_handlers))
+    , m_warn_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::warn, "WARN", m_handlers))
+    , m_error_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::error, "ERROR", m_handlers))
     { }
 
 MLogger::MLogger() : MLogger("No name") { }
@@ -123,11 +123,11 @@ MLogger::~MLogger() {
     clearHandlers();
 }
 
-int MLogger::getLevel() {
+MLoggerVerbosity MLogger::getLevel() {
     return m_level;
 }
 
-void MLogger::setLevel(int level) {
+void MLogger::setLevel(MLoggerVerbosity level) {
     m_level = level;
     // And set it on all of the logger handlers.
     m_trace_handler.setLevel(level);
@@ -225,5 +225,5 @@ void MLogger::setDefaults() {
     MLoggerStderrHandler *handler = new MLoggerStderrHandler();
     addHandler(handler);
     // Defaut log level is info
-    setLevel(LOGLEVEL_INFO);
+    setLevel(MLoggerVerbosity::info);
 }
