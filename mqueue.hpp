@@ -26,7 +26,7 @@ public:
     // until it is not empty.
     T& dequeue(void);
     // Return size of the queue.
-    size_t size(void) const;
+    size_t size(void);
     // Return the maxsize of the queue.
     size_t maxsize(void) const;
 private:
@@ -76,7 +76,7 @@ T& SafeQueue<T>::dequeue(void) {
 }
 
 template<class T>
-size_t SafeQueue<T>::size(void) const {
+size_t SafeQueue<T>::size(void) {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_queue.size();
 }
