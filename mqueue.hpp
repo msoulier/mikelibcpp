@@ -77,6 +77,7 @@ T& SafeQueue<T>::dequeue(void) {
 
 template<class T>
 size_t SafeQueue<T>::size(void) const {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_queue.size();
 }
 
