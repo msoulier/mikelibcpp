@@ -24,10 +24,12 @@ ifeq ($(OS),Linux)
 	LIBS+=-lpthread
 endif
 
-all: test
+all: testbuild
 
-test:
+testbuild:
 	$(CC) $(CFLAGS) -o test test.cpp $(LIBS)
+
+test: testbuild
 	./test
 
 clean:
