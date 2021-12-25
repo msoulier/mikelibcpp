@@ -10,18 +10,28 @@ void testsafequeue(void) {
 
     std::cout << "maxsize of queue is " << queue.maxsize() << std::endl;
 
+    std::cout << "1" << std::endl;
     queue.enqueue(1);
+    std::cout << "2" << std::endl;
     queue.enqueue(2);
+    std::cout << "3" << std::endl;
     queue.enqueue(3);
+    std::cout << "4" << std::endl;
     queue.enqueue(4);
+    std::cout << "5" << std::endl;
     queue.enqueue(5);
 
     std::cout << "SafeQueue size is " << queue.size() << std::endl;
 
+    std::cout << "dequeueing 1" << std::endl;
     std::cout << "dequeue " << queue.dequeue() << std::endl;
+    std::cout << "dequeueing 2" << std::endl;
     std::cout << "dequeue " << queue.dequeue() << std::endl;
+    std::cout << "dequeueing 3" << std::endl;
     std::cout << "dequeue " << queue.dequeue() << std::endl;
+    std::cout << "dequeueing 4" << std::endl;
     std::cout << "dequeue " << queue.dequeue() << std::endl;
+    std::cout << "dequeueing 5" << std::endl;
     std::cout << "dequeue " << queue.dequeue() << std::endl;
 
     std::cout << "SafeQueue size is " << queue.size() << std::endl;
