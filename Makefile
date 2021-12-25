@@ -9,20 +9,12 @@ ifeq ($(DEBUG),1)
 	CFLAGS += -ggdb
 endif
 
-#ifeq ($(threads),1)
-#    CFLAGS += -DMIKELIBC++_THREADS
-#endif
-
 ifeq ($(OS),Darwin)
-	LDFLAGS+=-L/usr/local/lib
 	CFLAGS+=-DDARWIN -I/usr/local/include
-	LIBS+=-lpthread
 endif
 
 ifeq ($(OS),Linux)
-	LDFLAGS+=-L/usr/lib/x86_64-linux-gnu
-	CFLAGS+=-DLINUX -static
-	LIBS+=-lpthread
+	CFLAGS+=-DLINUX
 endif
 
 all: libmikecpp.a
