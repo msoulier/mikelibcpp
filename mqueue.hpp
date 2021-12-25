@@ -8,6 +8,7 @@
 
 #include <queue>
 #include <mutex>
+#include <condition_variable>
 
 //////////////////////////////////////////////////////////////////////
 // SafeQueue - A thread-safe templated queue.                       //
@@ -41,7 +42,7 @@ template<class T>
 SafeQueue<T>::SafeQueue(size_t maxsize) : m_maxsize(maxsize) { }
 
 template<class T>
-SafeQueue<T>::~SafeQueue() { }
+SafeQueue<T>::~SafeQueue(void) { }
 
 template<class T>
 void SafeQueue<T>::enqueue(const T item) {
@@ -55,6 +56,7 @@ void SafeQueue<T>::enqueue(const T item) {
         m_full.wait(lock);
     }
     m_queue.push(item);
+    lock.unlock();
     m_empty.notify_all();
 }
 
@@ -72,6 +74,7 @@ T SafeQueue<T>::dequeue(void) {
     // Pull the item off and notify writer if it's waiting on full cond.
     T item = m_queue.front();
     m_queue.pop();
+    lock.unlock();
     m_full.notify_all();
     return item;
 }

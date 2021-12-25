@@ -10,7 +10,6 @@
 #include <string>
 #include <sstream>
 #include <mutex>
-#include <condition_variable>
 #include <vector>
 #include <stdio.h>
 #include <stdarg.h>
