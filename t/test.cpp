@@ -3,7 +3,50 @@
 #include "mlogger.hpp"
 #include "mqueue.hpp"
 
-void testsafequeue(void) {
+void testsafequeuelimits(void) {
+    SafeQueue<int> queue(10);
+    int input[13] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+    for (int i = 0; i < 13; i++) {
+        std::cout << "enqueueing " << input[i] << ": ";
+        if (queue.enqueue(input[i], false)) {
+            std::cout << "successful" << ": ";
+            if (i < 10) {
+                std::cout << "pass" << std::endl;
+            } else {
+                std::cout << "fail" << std::endl;
+            }
+        } else {
+            std::cout << "unsuccessful" << ": ";
+            if (i >= 10) {
+                std::cout << "pass" << std::endl;
+            } else {
+                std::cout << "fail" << std::endl;
+            }
+        }
+    }
+    std::cout << std::endl;
+    for (int i = 0; i < 13; i++) {
+        std::cout << "dequeueing: ";
+        int item;
+        if (queue.dequeue(item, false)) {
+            std::cout << "successful: " << item << ": ";
+            if (i < 10) {
+                std::cout << "pass" << std::endl;
+            } else {
+                std::cout << "fail" << std::endl;
+            }
+        } else {
+            std::cout << "unsuccessful: ";
+            if (i >= 10) {
+                std::cout << "pass" << std::endl;
+            } else {
+                std::cout << "fail" << std::endl;
+            }
+        }
+    }
+}
+
+void testsafequeuesimple(void) {
     std::cout << "Testing SafeQueue with ints" << std::endl;
 
     SafeQueue<int> queue(10);
@@ -23,16 +66,37 @@ void testsafequeue(void) {
 
     std::cout << "SafeQueue size is " << queue.size() << std::endl;
 
-    std::cout << "dequeueing 1" << std::endl;
-    std::cout << "dequeue " << queue.dequeue() << std::endl;
-    std::cout << "dequeueing 2" << std::endl;
-    std::cout << "dequeue " << queue.dequeue() << std::endl;
-    std::cout << "dequeueing 3" << std::endl;
-    std::cout << "dequeue " << queue.dequeue() << std::endl;
-    std::cout << "dequeueing 4" << std::endl;
-    std::cout << "dequeue " << queue.dequeue() << std::endl;
-    std::cout << "dequeueing 5" << std::endl;
-    std::cout << "dequeue " << queue.dequeue() << std::endl;
+    int item;
+    std::cout << "dequeueing 1" << ": ";
+    if (queue.dequeue(item)) {
+        std::cout << "success: " << item << std::endl;
+    } else {
+        std::cout << "error" << std::endl;
+    }
+    std::cout << "dequeueing 2" << ": ";
+    if (queue.dequeue(item)) {
+        std::cout << "success: " << item << std::endl;
+    } else {
+        std::cout << "error" << std::endl;
+    }
+    std::cout << "dequeueing 3" << ": ";
+    if (queue.dequeue(item)) {
+        std::cout << "success: " << item << std::endl;
+    } else {
+        std::cout << "error" << std::endl;
+    }
+    std::cout << "dequeueing 4" << ": ";
+    if (queue.dequeue(item)) {
+        std::cout << "success: " << item << std::endl;
+    } else {
+        std::cout << "error" << std::endl;
+    }
+    std::cout << "dequeueing 5" << ": ";
+    if (queue.dequeue(item)) {
+        std::cout << "success: " << item << std::endl;
+    } else {
+        std::cout << "error" << std::endl;
+    }
 
     std::cout << "SafeQueue size is " << queue.size() << std::endl;
 }
@@ -56,7 +120,10 @@ int main(void) {
     testlogger();
 
     std::cout << std::endl;
-    testsafequeue();
+    testsafequeuesimple();
+
+    std::cout << std::endl;
+    testsafequeuelimits();
 
     return 0;
 }

@@ -21,11 +21,13 @@ public:
     SafeQueue(size_t maxsize = 0);
     ~SafeQueue(void);
     // Enqueue a new T. If enqueue would cause it to exceed maxsize,
-    // block until there is room on the queue.
-    void enqueue(const T item);
-    // Dequeue a new T and return it. If the queue is empty, wait on it
-    // until it is not empty.
-    T dequeue(void);
+    // and block is true, block until there is room on the queue. Return
+    // true on a successful enqueue, false otherwise.
+    bool enqueue(const T item, bool block=false);
+    // Dequeue a new T, populating the item referenced passed. If the queue
+    // is empty and block is true, block until the queue is not empty.
+    // Returns true on a successful dequeue, false otherwise.
+    bool dequeue(T& item, bool block=false);
     // Return size of the queue.
     size_t size(void);
     // Return the maxsize of the queue.
@@ -45,38 +47,53 @@ template<class T>
 SafeQueue<T>::~SafeQueue(void) { }
 
 template<class T>
-void SafeQueue<T>::enqueue(const T item) {
+bool SafeQueue<T>::enqueue(const T item, bool block) {
 
     std::unique_lock<std::mutex> lock(m_mutex);
 
-    while ((m_maxsize != 0) && (m_queue.size() >= m_maxsize)) {
-        // Queue full. Can't push more on. Block until there's room.
-        // this will atomically unlock the mutex and wait for the cv to get
-        // notified
-        m_full.wait(lock);
+    if (block) {
+        while ((m_maxsize != 0) && (m_queue.size() >= m_maxsize)) {
+            // Queue full. Can't push more on. Block until there's room.
+            // this will atomically unlock the mutex and wait for the cv to get
+            // notified
+            m_full.wait(lock);
+        }
+    } else {
+        if ((m_maxsize != 0) && (m_queue.size() >= m_maxsize)) {
+            // Queue full. Can't push more on. Do not block.
+            return false;
+        }
     }
     m_queue.push(item);
     lock.unlock();
     m_empty.notify_all();
+    return true;
 }
 
 template<class T>
-T SafeQueue<T>::dequeue(void) {
+bool SafeQueue<T>::dequeue(T& item, bool block) {
 
     std::unique_lock<std::mutex> lock(m_mutex);
 
-    while (m_queue.size() == 0) {
-        // Wait until something is put on it.
-        // this will atomically unlock the mutex and wait for the cv 
-        m_empty.wait(lock);
+    if (block) {
+        while (m_queue.size() == 0) {
+            // Wait until something is put on it.
+            // this will atomically unlock the mutex and wait for the cv 
+            m_empty.wait(lock);
+        }
+    } else {
+        if (m_queue.size() == 0) {
+            // Nothing to dequeue and we don't want to block.
+            return false;
+        }
     }
 
     // Pull the item off and notify writer if it's waiting on full cond.
-    T item = m_queue.front();
+    item = m_queue.front();
     m_queue.pop();
     lock.unlock();
     m_full.notify_all();
-    return item;
+    return true;
 }
 
 template<class T>
