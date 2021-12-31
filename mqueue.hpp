@@ -20,6 +20,9 @@ public:
     // Instantiate a new queue. 0 maxsize means unlimited.
     SafeQueue(size_t maxsize = 0);
     ~SafeQueue(void);
+    // Copy constructor and assignment operator.
+    SafeQueue(SafeQueue& source) = delete;
+    SafeQueue& operator=(const SafeQueue& source) = delete;
     // Enqueue a new T. If enqueue would cause it to exceed maxsize,
     // and block is true, block until there is room on the queue. Return
     // true on a successful enqueue, false otherwise.

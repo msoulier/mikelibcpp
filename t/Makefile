@@ -1,6 +1,7 @@
 CC=g++
 CFLAGS=-Wall -DLINUX --std=c++11 -I. -I..
-LIBS=-L.. -lmikecpp
+LIBS=-L.. -lmikecpp -lcppunit
+OBJS=safequeuetest.o test.o
 OS := $(shell uname -s)
 DEBUG=0
 
@@ -16,13 +17,19 @@ ifeq ($(OS),Linux)
 	CFLAGS+=-DLINUX
 endif
 
-all: testbuild
+all: test
 
-testbuild:
-	$(CC) $(CFLAGS) -o test test.cpp $(LIBS)
+safequeuetest.o: safequeuetest.cpp safequeuetest.hpp
+	$(CC) $(CFLAGS) -c safequeuetest.cpp
 
-test: testbuild
-	./test
+test.o: test.cpp
+	$(CC) $(CFLAGS) -c test.cpp
+
+test: $(OBJS)
+	$(CC) $(CFLAGS) -o unittest $(OBJS) $(LIBS)
+
+run: test
+	./unittest
 
 clean:
-	rm -f *.a *.o test
+	rm -f *.a *.o unittest
