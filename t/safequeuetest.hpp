@@ -10,14 +10,16 @@
 
 class SafeQueueTest : public CppUnit::TestCase
 {
+    CPPUNIT_TEST_SUITE( SafeQueueTest );
+    CPPUNIT_TEST( testSimple );
+    CPPUNIT_TEST( testQueueLimits );
+    CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
     void tearDown();
 
     void testSimple();
     void testQueueLimits();
-
-    static CppUnit::TestSuite *suite();
 
 private:
     SafeQueue<int> *m_queue;

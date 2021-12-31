@@ -47,15 +47,3 @@ void SafeQueueTest::testQueueLimits(void) {
         }
     }
 }
-
-CppUnit::TestSuite *SafeQueueTest::suite()
-{
-    CppUnit::TestSuite *suiteOfTests = new CppUnit::TestSuite("SafeQueueTest");
-    suiteOfTests->addTest( new CppUnit::TestCaller<SafeQueueTest>(
-                                   "testSimple",
-                                   &SafeQueueTest::testSimple ) );
-    suiteOfTests->addTest( new CppUnit::TestCaller<SafeQueueTest>(
-                                   "testQueueLimits",
-                                   &SafeQueueTest::testQueueLimits ) );
-    return suiteOfTests;
-}
