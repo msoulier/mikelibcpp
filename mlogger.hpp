@@ -175,6 +175,8 @@ public:
     void clearHandlers();
     // Initialize the logger with default settings.
     void setDefaults();
+    // Return the handlers
+    const std::vector<MLoggerHandler*>& getHandlers() const;
 private:
     // The logger name.
     std::string m_name;

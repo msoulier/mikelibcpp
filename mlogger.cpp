@@ -94,6 +94,10 @@ void MLoggerEmitter::setLevel(MLoggerVerbosity level) {
     m_level = level;
 }
 
+MLoggerVerbosity MLogger::getLevel() {
+    return m_level;
+}
+
 const std::string MLoggerEmitter::localDateTime() {
     const char *format = "%b %d %Y @ %X %Z";
     std::time_t t = std::time(NULL);
@@ -121,10 +125,6 @@ MLogger::MLogger() : MLogger("No name") { }
 
 MLogger::~MLogger() {
     clearHandlers();
-}
-
-MLoggerVerbosity MLogger::getLevel() {
-    return m_level;
 }
 
 void MLogger::setLevel(MLoggerVerbosity level) {
@@ -221,9 +221,15 @@ void MLogger::addHandler(MLoggerHandler* handler) {
 }
 
 void MLogger::setDefaults() {
+    // Clear any existing handlers.
+    clearHandlers();
     // Use a MLoggerStderrHandler
     MLoggerStderrHandler *handler = new MLoggerStderrHandler();
     addHandler(handler);
     // Defaut log level is info
     setLevel(MLoggerVerbosity::info);
+}
+
+const std::vector<MLoggerHandler*>& MLogger::getHandlers() const {
+    return m_handlers;
 }

@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-Wall -DLINUX --std=c++11 -I. -I..
 LIBS=-L.. -lmikecpp -lcppunit
-OBJS=safequeuetest.o test.o
+OBJS=safequeuetest.o test.o loggertest.o
 OS := $(shell uname -s)
 DEBUG=0
 
@@ -18,6 +18,9 @@ ifeq ($(OS),Linux)
 endif
 
 all: test
+
+loggertest.o: loggertest.cpp loggertest.hpp
+	$(CC) $(CFLAGS) -c loggertest.cpp
 
 safequeuetest.o: safequeuetest.cpp safequeuetest.hpp
 	$(CC) $(CFLAGS) -c safequeuetest.cpp

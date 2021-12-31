@@ -5,7 +5,6 @@
 #include <cppunit/TestAssert.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "mlogger.hpp"
 #include "mqueue.hpp"
 
 class SafeQueueTest : public CppUnit::TestCase
