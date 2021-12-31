@@ -29,7 +29,7 @@ tags:
 	ctags *.cpp *.hpp
 
 test: all
-	(cd t && make clean && make test)
+	(cd t && make clean && make run)
 
 clean:
 	rm -f *.a *.o
