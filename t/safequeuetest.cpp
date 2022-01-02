@@ -1,3 +1,6 @@
+#include <thread>
+#include <iostream>
+
 #include "safequeuetest.hpp"
 
 void SafeQueueTest::setUp() {
@@ -46,4 +49,36 @@ void SafeQueueTest::testQueueLimits(void) {
             CPPUNIT_ASSERT(!m_queue->dequeue(item, false));
         }
     }
+}
+
+bool producer_success = false;
+bool consumer_success = false;
+
+void producer(SafeQueue<int> *queue) {
+    int number = 1000;
+    for (int i = 0; i < number; i++) {
+        queue->enqueue(i);
+    }
+    producer_success = true;
+}
+
+void consumer(SafeQueue<int> *queue) {
+    int number = 1000;
+    int item;
+    for (int i = 0; i < number; i++) {
+        queue->dequeue(item);
+    }
+    consumer_success = true;
+}
+
+// Test with a producer and a consumer thread.
+void SafeQueueTest::testQueueThreads(void) {
+    std::thread prod(producer, m_queue);
+    std::thread cons(consumer, m_queue);
+
+    prod.join();
+    cons.join();
+
+    CPPUNIT_ASSERT( producer_success );
+    CPPUNIT_ASSERT( consumer_success );
 }

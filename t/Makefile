@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-Wall -DLINUX --std=c++11 -I. -I..
-LIBS=-L.. -lmikecpp -lcppunit
+LIBS=-L.. -lmikecpp -lcppunit -lpthread
 OBJS=safequeuetest.o test.o loggertest.o
 OS := $(shell uname -s)
 DEBUG=0

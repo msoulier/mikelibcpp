@@ -12,6 +12,7 @@ class SafeQueueTest : public CppUnit::TestCase
     CPPUNIT_TEST_SUITE( SafeQueueTest );
     CPPUNIT_TEST( testSimple );
     CPPUNIT_TEST( testQueueLimits );
+    CPPUNIT_TEST( testQueueThreads );
     CPPUNIT_TEST_SUITE_END();
 public:
     void setUp();
@@ -19,6 +20,7 @@ public:
 
     void testSimple();
     void testQueueLimits();
+    void testQueueThreads();
 
 private:
     SafeQueue<int> *m_queue;
