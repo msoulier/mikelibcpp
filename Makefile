@@ -6,7 +6,7 @@ OS := $(shell uname -s)
 DEBUG=0
 
 ifeq ($(DEBUG),1)
-	CFLAGS += -ggdb
+	CFLAGS += -ggdb -fsanitize=address
 endif
 
 ifeq ($(OS),Darwin)
