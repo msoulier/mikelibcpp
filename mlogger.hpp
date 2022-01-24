@@ -38,7 +38,9 @@ class MLoggerHandler
 public:
     MLoggerHandler();
     virtual ~MLoggerHandler() = default;
+    // For iostream operations to the handler (ie. logs)
     void operator<< (std::string buffer);
+    virtual std::string print(void);
 private:
     virtual void handle(std::string buffer);
 };
@@ -51,6 +53,7 @@ class MLoggerStderrHandler: public MLoggerHandler
 public:
     MLoggerStderrHandler();
     ~MLoggerStderrHandler();
+    std::string print(void);
 private:
     void handle(std::string buffer);
 };
@@ -66,12 +69,14 @@ public:
                        size_t rotation_filetime,
                        bool post_compress);
     ~MLoggerFileHandler();
+    std::string print(void);
 private:
     std::string m_path;
     size_t m_rotation_filesize;
     size_t m_rotation_filetime;
     bool m_post_compress;
     void handle(std::string buffer);
+    std::string rotation_filesize2s(void);
 };
 
 class MLoggerEmitter
@@ -135,10 +140,11 @@ private:
 };
 
 /*
- * The MLogger (Mike-logger) is a thread-safe C++ logger using the iostream operators.
- * To use it, you must invoke a logging level handler which will return an
- * MLoggerEmitter reference, and then terminate your line with std::endl to ensure
- * that the buffer is flushed and the line terminated with a newline.
+ * The MLogger (Mike-logger) is a thread-safe C++ logger using the iostream
+ * operators.  To use it, you must invoke a logging level handler which will
+ * return an MLoggerEmitter reference, and then terminate your line with
+ * std::endl to ensure that the buffer is flushed and the line terminated
+ * with a newline.
  */
 class MLogger
 {

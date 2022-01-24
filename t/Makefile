@@ -26,7 +26,7 @@ test.o: test.cpp
 test: $(OBJS)
 	$(CC) $(CFLAGS) -o unittest $(OBJS) $(LIBS)
 
-run: test
+run: clean test
 	./unittest
 
 clean:

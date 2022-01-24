@@ -5,6 +5,7 @@
 
 #include <ctime>
 #include <assert.h>
+#include <iomanip>
 
 #include "mlogger.hpp"
 
@@ -31,6 +32,11 @@ void MLoggerHandler::handle(std::string buffer)
     assert(0);
 }
 
+std::string MLoggerHandler::print(void)
+{
+    return "This should never be run";
+}
+
 /*
  * An implementation of an MLoggerHandler that logs to stderr.
  */
@@ -45,6 +51,11 @@ void MLoggerStderrHandler::handle(std::string buffer)
     std::cerr << buffer << std::endl;
 }
 
+std::string MLoggerStderrHandler::print(void)
+{
+    return "MLoggerStderrHandler";
+}
+
 /*
  * An implementation of an MLoggerHandler that logs to a file.
  */
@@ -57,10 +68,6 @@ MLoggerFileHandler::MLoggerFileHandler(std::string path,
     , m_rotation_filetime(rotation_filetime)
     , m_post_compress(post_compress)
 {
-    std::cout << "m_path is " << m_path << std::endl;
-    std::cout << "m_rotation_filesize is " << m_rotation_filesize << std::endl;
-    std::cout << "m_rotation_filetime is " << m_rotation_filetime << std::endl;
-    std::cout << "m_post_compress is " << m_post_compress << std::endl;
 }
 
 MLoggerFileHandler::~MLoggerFileHandler()
@@ -68,6 +75,41 @@ MLoggerFileHandler::~MLoggerFileHandler()
 
 void MLoggerFileHandler::handle(std::string buffer)
 {
+}
+
+std::string MLoggerFileHandler::print(void)
+{
+    std::stringstream result;
+    result << "MLoggerFileHandler: "
+           << m_path
+           << " "
+           << m_rotation_filesize
+           << " "
+           << m_rotation_filetime
+           << " "
+           << std::boolalpha << m_post_compress;
+    return result.str();
+}
+
+std::string MLoggerFileHandler::rotation_filesize2s(void)
+{
+    std::stringstream readable;
+    std::string unit = "bytes";
+    float result = 0;
+    if (m_rotation_filesize > 1024) {
+        unit = "kB";
+        result = m_rotation_filesize / 1024;
+    }
+    if (result > 1024) {
+        unit = "MB";
+        result /= 1024;
+    }
+    if (result > 1024) {
+        unit = "GB";
+        result /= 1024;
+    }
+    readable << result << unit;
+    return readable.str();
 }
 
 /*
