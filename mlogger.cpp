@@ -258,16 +258,13 @@ void MLogger::clearHandlers() {
     m_handlers.clear();
 }
 
-void MLogger::addHandler(MLoggerHandler* handler) {
-    m_handlers.push_back(handler);
-}
-
 void MLogger::setDefaults() {
     // Clear any existing handlers.
     clearHandlers();
     // Use a MLoggerStderrHandler
-    MLoggerStderrHandler *handler = new MLoggerStderrHandler();
-    addHandler(handler);
+
+	addHandler<MLoggerStderrHandler>();
+
     // Defaut log level is info
     setLevel(MLoggerVerbosity::info);
 }
