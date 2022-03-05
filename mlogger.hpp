@@ -175,8 +175,10 @@ public:
     void info(const char *fmt, ...);
     void warn(const char *fmt, ...);
     void error(const char *fmt, ...);
-    // Add a new handler. Takes ownership of the object.
-    void addHandler(MLoggerHandler* handler);
+
+	template <typename T, typename ...Args>
+	void addHandler(Args &&...args);
+
     // Clear all handlers.
     void clearHandlers();
     // Initialize the logger with default settings.
@@ -209,5 +211,10 @@ private:
     // A print method for handling va_args in one place.
     std::string sprintf(const char *fmt, va_list args);
 };
+
+template <typename T, typename ...Args>
+void MLogger::addHandler(Args &&...args) {
+	m_handlers.push_back(new T(std::forward<Args>(args)...));
+}
 
 #endif /* mlogger_hpp */

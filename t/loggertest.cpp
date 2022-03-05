@@ -28,11 +28,9 @@ void LoggerTest::testSimple(void) {
 // Test file handler.
 void LoggerTest::testFileHandler(void) {
     m_logger.clearHandlers();
-    MLoggerHandler *handler = new MLoggerFileHandler("/tmp/logfile.log",
-                                                     500*1024*1024,
-                                                     300,
-                                                     true);
-    m_logger.addHandler(handler);
+
+	m_logger.addHandler<MLoggerFileHandler>("/tmp/logfile.log",
+		500 * 1024 * 1024, 300, true);
 
     // Should be the only handler.
     int count = 0;
