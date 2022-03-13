@@ -263,7 +263,7 @@ void MLogger::setDefaults() {
     clearHandlers();
     // Use a MLoggerStderrHandler
 
-	addHandler<MLoggerStderrHandler>();
+    addHandler<MLoggerStderrHandler>();
 
     // Defaut log level is info
     setLevel(MLoggerVerbosity::info);

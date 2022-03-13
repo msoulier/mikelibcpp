@@ -176,8 +176,8 @@ public:
     void warn(const char *fmt, ...);
     void error(const char *fmt, ...);
 
-	template <typename T, typename ...Args>
-	void addHandler(Args &&...args);
+    template <typename T, typename ...Args>
+    void addHandler(Args &&...args);
 
     // Clear all handlers.
     void clearHandlers();
@@ -214,7 +214,7 @@ private:
 
 template <typename T, typename ...Args>
 void MLogger::addHandler(Args &&...args) {
-	m_handlers.push_back(new T(std::forward<Args>(args)...));
+    m_handlers.push_back(new T(std::forward<Args>(args)...));
 }
 
 #endif /* mlogger_hpp */
