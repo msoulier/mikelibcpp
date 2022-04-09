@@ -3,9 +3,13 @@
 //  Copyright © 2015 Michael Soulier. All rights reserved.
 //
 
-#include <ctime>
+#include <time.h>
 #include <assert.h>
 #include <iomanip>
+#include <sys/stat.h>
+#include <stdexcept>
+#include <unistd.h>
+#include <string.h>
 
 #include "mlogger.hpp"
 
@@ -68,10 +72,123 @@ MLoggerFileHandler::MLoggerFileHandler(std::string path,
     , m_rotation_filetime(rotation_filetime)
     , m_post_compress(post_compress)
 {
+    m_max_path_size = 1024;
+    m_logfile = NULL;
+    m_start_time.tm_year = 0;
+    // The path should be something like /var/log/foo/foo.log,
+    // which needs to be a symlink to the real file,
+    // Enforce the .log suffix.
+    if (!validate_path(path)) {
+        throw std::invalid_argument("paths must end in .log");
+    }
+    // /var/log/foo/foo-<suffix>.log, where suffix is a datetime
+    // stamp.
+    setup();
 }
 
 MLoggerFileHandler::~MLoggerFileHandler()
-{}
+{
+    if (m_logfile != NULL) {
+        fclose(m_logfile);
+    }
+}
+
+bool MLoggerFileHandler::validate_path(std::string path) {
+    // The path must end in .log
+    std::string suffix = path.substr(path.size()-4, 4);
+    if (suffix == ".log") {
+        return true;
+    } else {
+        return false;
+    }
+    // Might implement more checks in the future.
+}
+
+void MLoggerFileHandler::setup(void) {
+    // If there is a symlink at m_path, delete it. Anything else is
+    // an error.
+    struct stat filestat;
+    char pathbuf[m_max_path_size];
+    char err[BUFSIZE];
+    time_t curtime;
+    bool symlink_exists = false;
+    /* Stat the file. */
+    if (lstat(m_path.c_str(), &filestat) == 0)
+    {
+        if (S_ISLNK(filestat.st_mode)) {
+            symlink_exists = true;
+            // Read the link and pull the start time off of
+            // the suffix of the file.
+            if (readlink(m_path.c_str(), pathbuf, m_max_path_size) < 0) {
+                perror("readlink");
+                strerror_r(errno, err, BUFSIZE);
+                throw std::runtime_error("readlink " + std::string(err));
+            }
+            // pathbuf now has the path to the real file
+            // parse out the datetime stamp
+            std::string spathbuf(pathbuf);
+            m_curpath = spathbuf;
+            std::string dtstamp = spathbuf.substr(
+                spathbuf.size()-4-DATETIMESIZE, DATETIMESIZE
+                );
+            if (strptime(dtstamp.c_str(), "%Y%m%d%H%M%S", &m_start_time) == NULL) {
+                // Thanks to the geniuses that designed strptime, NULL tells us
+                // nothing in this case. Could be an error, could be the NULL
+                // byte at the end of the input string.
+                // If m_start_time.tm_year is still 0 then there was an error.
+                if (m_start_time.tm_year == 0) {
+                    perror("strptime");
+                    throw std::runtime_error("bad datetime string on file");
+                }
+            }
+        } else {
+            // Exists but not a symlink.
+            throw std::runtime_error(m_path + " exists and is not a symlink");
+        }
+    } else {
+        // Stat failure. Hopefully doesn't exist.
+        m_curpath = getfilename();
+        // Set the start time.
+        time(&curtime);
+        localtime_r(&curtime, &m_start_time);
+    }
+
+    // Open the file.
+    m_logfile = fopen(m_curpath.c_str(), "a");
+    if (m_logfile == NULL) {
+        perror("fopen");
+        strerror_r(errno, err, BUFSIZE);
+        throw std::runtime_error("fopen: " + std::string(err));
+    }
+
+    if (! symlink_exists) {
+        symlink(m_curpath.c_str(), m_path.c_str());
+    }
+}
+
+std::string MLoggerFileHandler::getfilename(void) {
+    // Take the existing m_path, remove the .log, append a new
+    // time suffix, and append .log again.
+    if (m_path.size() < 5) {
+        throw std::runtime_error("bad path to logfile, too short");
+    }
+    std::string subpath = m_path.substr(0, m_path.size()-4);
+    subpath += "-" + gettimesuffix() + ".log";
+    return subpath;
+}
+
+std::string MLoggerFileHandler::gettimesuffix(void) {
+    time_t curtime;
+    struct tm curtm;
+    char buf[DATETIMESIZE+1];
+
+    time(&curtime);
+    localtime_r(&curtime, &curtm);
+    strftime(buf, DATETIMESIZE+1, "%Y%m%d%H%M%S", &curtm);
+
+    std::string suffix(buf);
+    return suffix;
+}
 
 void MLoggerFileHandler::handle(std::string buffer)
 {
@@ -261,8 +378,8 @@ void MLogger::clearHandlers() {
 void MLogger::setDefaults() {
     // Clear any existing handlers.
     clearHandlers();
-    // Use a MLoggerStderrHandler
 
+    // Use a MLoggerStderrHandler
     addHandler<MLoggerStderrHandler>();
 
     // Defaut log level is info

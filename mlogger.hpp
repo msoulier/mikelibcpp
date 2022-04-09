@@ -6,6 +6,9 @@
 #ifndef mlogger_hpp
 #define mlogger_hpp
 
+#define BUFSIZE 1024
+#define DATETIMESIZE 14 // ie. 20220409181030
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -71,12 +74,23 @@ public:
     ~MLoggerFileHandler();
     std::string print(void);
 private:
+    // The path to the log symlink
     std::string m_path;
+    // The path to the current open logfile
+    std::string m_curpath;
     size_t m_rotation_filesize;
     size_t m_rotation_filetime;
     bool m_post_compress;
+    FILE *m_logfile;
+    size_t m_max_path_size;
+    struct tm m_start_time;
+
     void handle(std::string buffer);
     std::string rotation_filesize2s(void);
+    std::string gettimesuffix(void);
+    std::string getfilename(void);
+    void setup(void);
+    bool validate_path(std::string path);
 };
 
 class MLoggerEmitter
