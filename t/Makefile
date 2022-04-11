@@ -27,6 +27,7 @@ test: $(OBJS)
 	$(CC) $(CFLAGS) -o unittest $(OBJS) $(LIBS)
 
 run: clean test
+	rm -f /tmp/logfile*
 	./unittest
 
 clean:

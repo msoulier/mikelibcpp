@@ -84,6 +84,7 @@ private:
     FILE *m_logfile;
     size_t m_max_path_size;
     struct tm m_start_time;
+    size_t m_bytes_written;
 
     void handle(std::string buffer);
     std::string rotation_filesize2s(void);
@@ -91,6 +92,8 @@ private:
     std::string getfilename(void);
     void setup(void);
     bool validate_path(std::string path);
+    void rotate(void);
+    int symlink_exists(void);
 };
 
 class MLoggerEmitter

@@ -75,6 +75,7 @@ MLoggerFileHandler::MLoggerFileHandler(std::string path,
     m_max_path_size = 1024;
     m_logfile = NULL;
     m_start_time.tm_year = 0;
+    m_bytes_written = 0;
     // The path should be something like /var/log/foo/foo.log,
     // which needs to be a symlink to the real file,
     // Enforce the .log suffix.
@@ -102,6 +103,22 @@ bool MLoggerFileHandler::validate_path(std::string path) {
         return false;
     }
     // Might implement more checks in the future.
+}
+
+// Check m_path, if it's a symlink return 1, if it is not
+// return 0, if it exists and is not a symlink, return -1.
+int MLoggerFileHandler::symlink_exists(void) {
+    struct stat filestat;
+    /* Stat the file. */
+    if (lstat(m_path.c_str(), &filestat) == 0) {
+        if (S_ISLNK(filestat.st_mode)) {
+            return 1;
+        } else {
+            return -1;
+        }
+    } else {
+        return 0;
+    }
 }
 
 void MLoggerFileHandler::setup(void) {
@@ -166,6 +183,40 @@ void MLoggerFileHandler::setup(void) {
     }
 }
 
+void MLoggerFileHandler::rotate(void) {
+    time_t curtime;
+    char err[BUFSIZE];
+
+    if (m_logfile != NULL) {
+        fclose(m_logfile);
+        m_logfile = NULL;
+    }
+    m_curpath = getfilename();
+    // Set the start time.
+    time(&curtime);
+    localtime_r(&curtime, &m_start_time);
+    // zero the written bytes
+    m_bytes_written = 0;
+
+    // Open the file.
+    m_logfile = fopen(m_curpath.c_str(), "a");
+    if (m_logfile == NULL) {
+        perror("fopen");
+        strerror_r(errno, err, BUFSIZE);
+        throw std::runtime_error("fopen: " + std::string(err));
+    }
+
+    // Delete the symlink and point it at the new file.
+    int exists = symlink_exists();
+    if (exists == 1) {
+        unlink(m_path.c_str());
+    }
+    if (exists < 0) {
+        throw std::runtime_error(m_path + " exists but is not a symlink");
+    }
+    symlink(m_curpath.c_str(), m_path.c_str());
+}
+
 std::string MLoggerFileHandler::getfilename(void) {
     // Take the existing m_path, remove the .log, append a new
     // time suffix, and append .log again.
@@ -192,6 +243,14 @@ std::string MLoggerFileHandler::gettimesuffix(void) {
 
 void MLoggerFileHandler::handle(std::string buffer)
 {
+    if (m_logfile != NULL) {
+        m_bytes_written += fprintf(m_logfile, "%s\n", buffer.c_str());
+        if (m_bytes_written >= m_rotation_filesize) {
+            rotate();
+        }
+    } else {
+        fprintf(stderr, "Cannot print to logfile: file not open\n");
+    }
 }
 
 std::string MLoggerFileHandler::print(void)
