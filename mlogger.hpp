@@ -79,7 +79,7 @@ private:
     // The path to the current open logfile
     std::string m_curpath;
     size_t m_rotation_filesize;
-    size_t m_rotation_filetime;
+    time_t m_rotation_filetime;
     bool m_post_compress;
     FILE *m_logfile;
     size_t m_max_path_size;
@@ -94,6 +94,8 @@ private:
     bool validate_path(std::string path);
     void rotate(void);
     int symlink_exists(void);
+    void pop_start_time(const char *pathbuf);
+    void pop_bytes_written(const char *pathbuf);
 };
 
 class MLoggerEmitter

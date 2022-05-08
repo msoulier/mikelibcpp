@@ -1,21 +1,12 @@
 CC=g++
-CFLAGS=-Wall -DLINUX --std=c++11 -I.
+CFLAGS=-Wall --std=c++17 -I.
 OBJS=mlogger.o
 LIBS=
 OS := $(shell uname -s)
 DEBUG=0
 
 ifeq ($(DEBUG),1)
-	#CFLAGS += -ggdb -fsanitize=address
-	CFLAGS += -ggdb
-endif
-
-ifeq ($(OS),Darwin)
-	CFLAGS+=-DDARWIN -I/usr/local/include
-endif
-
-ifeq ($(OS),Linux)
-	CFLAGS+=-DLINUX
+	CFLAGS += -ggdb -fsanitize=address
 endif
 
 all: libmikecpp.a

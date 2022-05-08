@@ -121,6 +121,36 @@ int MLoggerFileHandler::symlink_exists(void) {
     }
 }
 
+void MLoggerFileHandler::pop_bytes_written(const char *pathbuf) {
+    struct stat filestat;
+    /* Stat the file. */
+    if (stat(pathbuf, &filestat) == 0)
+    {
+        m_bytes_written = filestat.st_size;
+    } else {
+        perror("stat");
+        throw std::runtime_error("stat on file failed");
+    }
+}
+
+void MLoggerFileHandler::pop_start_time(const char *pathbuf) {
+    std::string spathbuf(pathbuf);
+    m_curpath = spathbuf;
+    std::string dtstamp = spathbuf.substr(
+        spathbuf.size()-4-DATETIMESIZE, DATETIMESIZE
+        );
+    if (strptime(dtstamp.c_str(), "%Y%m%d%H%M%S", &m_start_time) == NULL) {
+        // Thanks to the geniuses that designed strptime, NULL tells us
+        // nothing in this case. Could be an error, could be the NULL
+        // byte at the end of the input string.
+        // If m_start_time.tm_year is still 0 then there was an error.
+        if (m_start_time.tm_year == 0) {
+            perror("strptime");
+            throw std::runtime_error("bad datetime string on file");
+        }
+    }
+}
+
 void MLoggerFileHandler::setup(void) {
     // If there is a symlink at m_path, delete it. Anything else is
     // an error.
@@ -143,21 +173,9 @@ void MLoggerFileHandler::setup(void) {
             }
             // pathbuf now has the path to the real file
             // parse out the datetime stamp
-            std::string spathbuf(pathbuf);
-            m_curpath = spathbuf;
-            std::string dtstamp = spathbuf.substr(
-                spathbuf.size()-4-DATETIMESIZE, DATETIMESIZE
-                );
-            if (strptime(dtstamp.c_str(), "%Y%m%d%H%M%S", &m_start_time) == NULL) {
-                // Thanks to the geniuses that designed strptime, NULL tells us
-                // nothing in this case. Could be an error, could be the NULL
-                // byte at the end of the input string.
-                // If m_start_time.tm_year is still 0 then there was an error.
-                if (m_start_time.tm_year == 0) {
-                    perror("strptime");
-                    throw std::runtime_error("bad datetime string on file");
-                }
-            }
+            pop_start_time(pathbuf);
+            // And add the file size to bytes_written.
+            pop_bytes_written(pathbuf);
         } else {
             // Exists but not a symlink.
             throw std::runtime_error(m_path + " exists and is not a symlink");
@@ -244,8 +262,15 @@ std::string MLoggerFileHandler::gettimesuffix(void) {
 void MLoggerFileHandler::handle(std::string buffer)
 {
     if (m_logfile != NULL) {
+        // Check for rotation by file size.
         m_bytes_written += fprintf(m_logfile, "%s\n", buffer.c_str());
         if (m_bytes_written >= m_rotation_filesize) {
+            rotate();
+        }
+        time_t current_time = time(NULL);
+        time_t start_time = mktime(&m_start_time);
+        // Check for rotation by file age.
+        if (current_time >= (start_time + m_rotation_filetime)) {
             rotate();
         }
     } else {

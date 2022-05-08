@@ -1,16 +1,8 @@
 CC=g++
-CFLAGS=-Wall -DLINUX --std=c++11 -I. -I.. -ggdb -fsanitize=address
+CFLAGS=-Wall --std=c++17 -I. -I.. -ggdb -fsanitize=address
 LIBS=-L.. -lmikecpp -lcppunit -lpthread
 OBJS=safequeuetest.o test.o loggertest.o
 OS := $(shell uname -s)
-
-ifeq ($(OS),Darwin)
-	CFLAGS+=-DDARWIN -I/usr/local/include
-endif
-
-ifeq ($(OS),Linux)
-	CFLAGS+=-DLINUX
-endif
 
 all: test
 
