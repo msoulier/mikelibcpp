@@ -357,11 +357,11 @@ MLogger::MLogger(std::string name)
     : m_name(name)
     , m_level(MLoggerVerbosity::info)
     , m_ostream(std::cerr)
-    , m_trace_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::trace, "TRACE", m_handlers))
-    , m_debug_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::debug, "DEBUG", m_handlers))
-    , m_info_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::info, "INFO", m_handlers))
-    , m_warn_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::warn, "WARN", m_handlers))
-    , m_error_handler(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::error, "ERROR", m_handlers))
+    , m_trace_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::trace, "TRACE", m_handlers))
+    , m_debug_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::debug, "DEBUG", m_handlers))
+    , m_info_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::info, "INFO", m_handlers))
+    , m_warn_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::warn, "WARN", m_handlers))
+    , m_error_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::error, "ERROR", m_handlers))
     { }
 
 MLogger::MLogger() : MLogger("No name") { }
@@ -373,31 +373,31 @@ MLogger::~MLogger() {
 void MLogger::setLevel(MLoggerVerbosity level) {
     m_level = level;
     // And set it on all of the logger handlers.
-    m_trace_handler.setLevel(level);
-    m_debug_handler.setLevel(level);
-    m_info_handler.setLevel(level);
-    m_warn_handler.setLevel(level);
-    m_error_handler.setLevel(level);
+    m_trace_emitter.setLevel(level);
+    m_debug_emitter.setLevel(level);
+    m_info_emitter.setLevel(level);
+    m_warn_emitter.setLevel(level);
+    m_error_emitter.setLevel(level);
 }
 
 MLoggerEmitter& MLogger::trace() {
-    return m_trace_handler;
+    return m_trace_emitter;
 }
 
 MLoggerEmitter& MLogger::debug() {
-    return m_debug_handler;
+    return m_debug_emitter;
 }
 
 MLoggerEmitter& MLogger::info() {
-    return m_info_handler;
+    return m_info_emitter;
 }
 
 MLoggerEmitter& MLogger::warn() {
-    return m_warn_handler;
+    return m_warn_emitter;
 }
 
 MLoggerEmitter& MLogger::error() {
-    return m_error_handler;
+    return m_error_emitter;
 }
 
 void MLogger::clearHandlers() {

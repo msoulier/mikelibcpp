@@ -195,31 +195,31 @@ public:
     // Log printf style at called level.
     template <typename ...Args>
     void trace(Args&&... args) {
-        m_trace_handler << this->sprintf(std::forward<Args>(args)...)
+        m_trace_emitter << this->sprintf(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void debug(Args&&... args) {
-        m_debug_handler << this->sprintf(std::forward<Args>(args)...)
+        m_debug_emitter << this->sprintf(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void info(Args&&... args) {
-        m_info_handler << this->sprintf(std::forward<Args>(args)...)
+        m_info_emitter << this->sprintf(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void warn(Args&&... args) {
-        m_warn_handler << this->sprintf(std::forward<Args>(args)...)
+        m_warn_emitter << this->sprintf(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void error(Args&&... args) {
-        m_error_handler << this->sprintf(std::forward<Args>(args)...)
+        m_error_emitter << this->sprintf(std::forward<Args>(args)...)
                         << std::endl;
     }
 
@@ -242,15 +242,15 @@ private:
     // The mutex used for synchronization.
     std::mutex m_mutex;
     // Trace handler
-    MLoggerEmitter m_trace_handler;
+    MLoggerEmitter m_trace_emitter;
     // Debug handler
-    MLoggerEmitter m_debug_handler;
+    MLoggerEmitter m_debug_emitter;
     // Info handler
-    MLoggerEmitter m_info_handler;
+    MLoggerEmitter m_info_emitter;
     // Warn handler
-    MLoggerEmitter m_warn_handler;
+    MLoggerEmitter m_warn_emitter;
     // Error handler
-    MLoggerEmitter m_error_handler;
+    MLoggerEmitter m_error_emitter;
     // The thread-safe buffer where the logs are composed.
     std::stringstream m_buffer;
     // A vector of MLoggerHandler* objects.
