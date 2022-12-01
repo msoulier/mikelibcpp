@@ -400,57 +400,6 @@ MLoggerEmitter& MLogger::error() {
     return m_error_handler;
 }
 
-std::string MLogger::sprintf(const char *fmt, va_list args)
-{
-    char buffer[MLOGGER_BUFSIZE];
-    // Add to buffer here
-    if (vsnprintf(buffer, MLOGGER_BUFSIZE, fmt, args) > MLOGGER_BUFSIZE) {
-        fprintf(stderr, "MLogger::printf: output truncated\n");
-    }
-    std::string msg(buffer);
-    return msg;
-}
-
-void MLogger::trace(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    m_trace_handler << this->sprintf(fmt, args) << std::endl;
-    va_end(args);
-}
-
-void MLogger::debug(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    m_debug_handler << this->sprintf(fmt, args) << std::endl;
-    va_end(args);
-}
-
-void MLogger::info(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    m_info_handler << this->sprintf(fmt, args) << std::endl;
-    va_end(args);
-}
-
-void MLogger::warn(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    m_warn_handler << this->sprintf(fmt, args) << std::endl;
-    va_end(args);
-}
-
-void MLogger::error(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    m_error_handler << this->sprintf(fmt, args) << std::endl;
-    va_end(args);
-}
-
 void MLogger::clearHandlers() {
     // delete all handlers
     for (auto handler : m_handlers) {

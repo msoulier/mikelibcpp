@@ -16,8 +16,12 @@
 #include <vector>
 #include <stdio.h>
 #include <stdarg.h>
+#include <tuple>
+#include <errno.h>
 
-#define MLOGGER_BUFSIZE 1024
+#include "to_string.hpp"
+
+#define MLOGGER_BUFSIZE 4096
 
 enum MLoggerVerbosity {
     trace=0,
@@ -189,11 +193,35 @@ public:
     // Convenicence methods for error level log with iostream.
     MLoggerEmitter& error();
     // Log printf style at called level.
-    void trace(const char *fmt, ...);
-    void debug(const char *fmt, ...);
-    void info(const char *fmt, ...);
-    void warn(const char *fmt, ...);
-    void error(const char *fmt, ...);
+    template <typename ...Args>
+    void trace(Args&&... args) {
+        m_trace_handler << this->sprintf(std::forward<Args>(args)...)
+                        << std::endl;
+    }
+
+    template <typename ...Args>
+    void debug(Args&&... args) {
+        m_debug_handler << this->sprintf(std::forward<Args>(args)...)
+                        << std::endl;
+    }
+
+    template <typename ...Args>
+    void info(Args&&... args) {
+        m_info_handler << this->sprintf(std::forward<Args>(args)...)
+                        << std::endl;
+    }
+
+    template <typename ...Args>
+    void warn(Args&&... args) {
+        m_warn_handler << this->sprintf(std::forward<Args>(args)...)
+                        << std::endl;
+    }
+
+    template <typename ...Args>
+    void error(Args&&... args) {
+        m_error_handler << this->sprintf(std::forward<Args>(args)...)
+                        << std::endl;
+    }
 
     template <typename T, typename ...Args>
     void addHandler(Args &&...args);
@@ -227,8 +255,30 @@ private:
     std::stringstream m_buffer;
     // A vector of MLoggerHandler* objects.
     std::vector<MLoggerHandler*> m_handlers;
-    // A print method for handling va_args in one place.
-    std::string sprintf(const char *fmt, va_list args);
+
+    // A print method called by all of the various log level wrappers.
+    // Note that std::remove_reference_t has to be used on the incoming Args
+    // or the expected std::string will be a reference instead.
+    template <typename ...Args>
+    std::string sprintf(const char* fmt, Args&&... args) {
+        std::tuple tp = std::make_tuple(to_string<std::remove_reference_t<Args>>(args)...);
+        return std::apply([fmt](auto ...args) {
+            char buffer[MLOGGER_BUFSIZE];
+            int rv = snprintf(buffer,
+                              MLOGGER_BUFSIZE,
+                              fmt,
+                              std::forward<decltype(args)>(args)...);
+            if (rv < 0) {
+                perror("sprintf");
+                return std::string("");
+            } else {
+                if (rv > MLOGGER_BUFSIZE) {
+                    fprintf(stderr, "MLogger::printf: output truncated\n");
+                }
+                return std::string(buffer);
+            }
+        }, tp);
+    }
 };
 
 template <typename T, typename ...Args>

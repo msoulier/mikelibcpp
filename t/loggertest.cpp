@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "loggertest.hpp"
 
@@ -24,12 +25,22 @@ void LoggerTest::testSimple(void) {
         std::cout << "    " << handler->print() << std::endl;
     }
     CPPUNIT_ASSERT( count == 1 );
+
+    m_logger.info() << "info using the iostream interface" << std::endl;
+    m_logger.info("info using printf style interface");
+
+    std::string mys("HELLO");
+    int aninteger = 10;
+    m_logger.info() << mys << " " << aninteger << std::endl;
+    m_logger.info("mys is %s, aninteger is %d", mys, aninteger);
 }
 #pragma GCC diagnostic pop
 
 // Test file handler.
 void LoggerTest::testFileHandler(void) {
     m_logger.clearHandlers();
+
+    system("rm -f /tmp/*.log");
 
     m_logger.addHandler<MLoggerFileHandler>("/tmp/logfile.log",
         500 * 1024 * 1024, 300, true);
@@ -43,8 +54,10 @@ void LoggerTest::testFileHandler(void) {
     }
     CPPUNIT_ASSERT( count == 1 );
 
+    std::string badstuff("bad shit happened");
+
     m_logger.info() << "This is a log entry" << std::endl;
-    m_logger.warn() << "And this is another one" << std::endl;
+    m_logger.warn() << "error: " << badstuff << std::endl;
 
     m_logger.clearHandlers();
 
@@ -52,6 +65,32 @@ void LoggerTest::testFileHandler(void) {
     FILE *logfile = fopen("/tmp/logfile.log", "r");
     CPPUNIT_ASSERT( logfile != NULL );
 
+    count = 0;
+    if (logfile != NULL) {
+        char buffer[1024];
+        for (;;) {
+            if (fgets(buffer, 1024, logfile) == NULL) {
+                break;
+            }
+            count++;
+            printf("%d: %s", count, buffer);
+        }
+    }
+    fclose(logfile);
+    CPPUNIT_ASSERT( count == 2 );
+
+    system("rm -f /tmp/*.log");
+
+    // Try again with the printf style logging
+    m_logger.addHandler<MLoggerFileHandler>("/tmp/logfile.log",
+        500 * 1024 * 1024, 300, true);
+
+    m_logger.info("this is a log entry");
+    m_logger.warn("error: %s", badstuff);
+
+    m_logger.clearHandlers();
+
+    logfile = fopen("/tmp/logfile.log", "r");
     count = 0;
     if (logfile != NULL) {
         char buffer[1024];

@@ -14,7 +14,7 @@ all: libmikecpp.a
 libmikecpp.a: $(OBJS)
 	ar rc libmikecpp.a $(OBJS)
 
-mlogger.o: mlogger.cpp mlogger.hpp
+mlogger.o: mlogger.cpp mlogger.hpp type_traits.hpp to_string.hpp
 	$(CC) $(CFLAGS) -c mlogger.cpp
 
 tags:
