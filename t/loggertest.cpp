@@ -29,10 +29,13 @@ void LoggerTest::testSimple(void) {
     m_logger.info() << "info using the iostream interface" << std::endl;
     m_logger.info("info using printf style interface");
 
-    std::string mys("HELLO");
+    std::string mystring("std::string");
+    const char* myother = "C String";
+    char mycarr[] = "C array string";
     int aninteger = 10;
-    m_logger.info() << mys << " " << aninteger << std::endl;
-    m_logger.info("mys is %s, aninteger is %d", mys, aninteger);
+    m_logger.info() << mystring << " " << aninteger << std::endl;
+    m_logger.info("mystring is %s, aninteger is %d", mystring, aninteger);
+    m_logger.info("myother is %s, mycarr is %s", myother, mycarr);
 }
 #pragma GCC diagnostic pop
 

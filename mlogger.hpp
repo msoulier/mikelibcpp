@@ -18,6 +18,7 @@
 #include <stdarg.h>
 #include <tuple>
 #include <errno.h>
+#include <type_traits>
 
 #include "to_string.hpp"
 
@@ -195,31 +196,31 @@ public:
     // Log printf style at called level.
     template <typename ...Args>
     void trace(Args&&... args) {
-        m_trace_emitter << this->sprintf(std::forward<Args>(args)...)
+        m_trace_emitter << this->print(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void debug(Args&&... args) {
-        m_debug_emitter << this->sprintf(std::forward<Args>(args)...)
+        m_debug_emitter << this->print(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void info(Args&&... args) {
-        m_info_emitter << this->sprintf(std::forward<Args>(args)...)
+        m_info_emitter << this->print(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void warn(Args&&... args) {
-        m_warn_emitter << this->sprintf(std::forward<Args>(args)...)
+        m_warn_emitter << this->print(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void error(Args&&... args) {
-        m_error_emitter << this->sprintf(std::forward<Args>(args)...)
+        m_error_emitter << this->print(std::forward<Args>(args)...)
                         << std::endl;
     }
 
@@ -256,13 +257,33 @@ private:
     // A vector of MLoggerHandler* objects.
     std::vector<MLoggerHandler*> m_handlers;
 
-    // A print method called by all of the various log level wrappers.
-    // Note that std::remove_reference_t has to be used on the incoming Args
-    // or the expected std::string will be a reference instead.
-    template <typename ...Args>
-    std::string sprintf(const char* fmt, Args&&... args) {
-        std::tuple tp = std::make_tuple(to_string<std::remove_reference_t<Args>>(args)...);
+    template<typename T>
+    struct is_string_obj_ : std::false_type {};
+
+    template<typename CharT, typename Traits, typename Allocator>
+    struct is_string_obj_<std::basic_string<CharT, Traits, Allocator>> : std::true_type {};
+
+    template<typename T>
+    struct is_string_obj : is_string_obj_<std::remove_reference_t<T>> {};
+
+    template<typename T>
+    static constexpr bool is_string_obj_v = is_string_obj<T>::value;
+
+    template<typename T>
+    std::enable_if_t<!is_string_obj_v<T>, T> to_printf_compatible(const T t) {
+        return t;
+    }
+
+    template<typename T>
+    std::enable_if_t<is_string_obj_v<T>, const char *> to_printf_compatible(const T &t) {
+        return t.data();
+    }
+
+    template<typename ...Args>
+    std::string print(const char *fmt, Args &&...args) {
+        std::tuple t = std::make_tuple(to_printf_compatible<Args>(args)...);
         return std::apply([fmt](auto ...args) {
+            //printf(fmt, std::forward<decltype(args)>(args)...);
             char buffer[MLOGGER_BUFSIZE];
             int rv = snprintf(buffer,
                               MLOGGER_BUFSIZE,
@@ -277,7 +298,7 @@ private:
                 }
                 return std::string(buffer);
             }
-        }, tp);
+        }, t);
     }
 };
 
