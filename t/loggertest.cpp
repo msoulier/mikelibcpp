@@ -28,6 +28,8 @@ void LoggerTest::testSimple(void) {
 
     m_logger.info() << "info using the iostream interface" << std::endl;
     m_logger.info("info using printf style interface");
+    char *msg = (char *)"A random null-terminated string";
+    m_logger.info("info with a char* = %s", msg);
 
     std::string mystring("std::string");
     const char* myother = "C String";
