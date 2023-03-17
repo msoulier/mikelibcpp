@@ -26,22 +26,15 @@ class NetworkManager
 public:
     // Construtor
     NetworkManager();
-    // Copy constructor
-    NetworkManager(NetworkManager &source);
     // Destructor
     ~NetworkManager(void);
-    // Assignment operator
-    void operator=(NetworkManager &source);
-    // A print method for sending data an iostream
-    void Print(std::ostream *os);
+    // Disable the copy constructor and the assignment operator.
+    NetworkManager(NetworkManager &source) = delete;
+    NetworkManager& operator=(NetworkManager &source) = delete;
     // Write data to an open socket
     ssize_t write(const std::string msg, SESSIONID sessionid=1);
     // Read data from an open socket
     ssize_t read(std::string &buffer, SESSIONID sessionid=1);
-
-private:
-    // Reusable Copy method
-    void Copy(NetworkManager &source);
 
 protected:
     // Note: socket fds for sessions are mapped in m_sessionmap.
@@ -60,17 +53,20 @@ protected:
     void set_mode(NetworkManagerMode mode);
 };
 
-std::ostream &operator<<(std::ostream &os, NetworkManager &manager);
-
 class TcpNetworkManager: public NetworkManager
 {
 public:
     TcpNetworkManager();
     ~TcpNetworkManager();
+    // Disable the copy constructor and the assignment operator.
+    TcpNetworkManager(TcpNetworkManager &source) = delete;
+    TcpNetworkManager& operator=(TcpNetworkManager &source) = delete;
     // Connect to a remote host as a client.
     SESSIONID connect_to(std::string host, std::string port);
     int listen(int port);
     SESSIONID accept();
+    // A print method for sending data an iostream
+    std::string print();
 private:
 
 };
@@ -82,7 +78,11 @@ class UdpNetworkManager: public NetworkManager
 public:
     UdpNetworkManager();
     ~UdpNetworkManager();
-
+    // Disable the copy constructor and the assignment operator.
+    UdpNetworkManager(UdpNetworkManager &source) = delete;
+    UdpNetworkManager& operator=(UdpNetworkManager &source) = delete;
+    // A print method for sending data an iostream
+    std::string print();
 private:
 
 };

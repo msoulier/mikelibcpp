@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string.h>
+#include <sstream>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -196,4 +197,31 @@ SESSIONID TcpNetworkManager::accept() {
         strcpy(client_address, "Unknown");
     }
     return m_latest_sessionid;
+}
+
+std::string TcpNetworkManager::print() {
+    std::stringstream stream;
+    stream << "TcpNetworkManager: " << "[" << "FIXME" << "]";
+    return stream.str();
+}
+
+std::ostream &operator<<(std::ostream &os, TcpNetworkManager &manager) {
+    return os << manager.print();
+}
+
+/*
+ * UdpNetworkManager
+ */
+UdpNetworkManager::UdpNetworkManager()
+{
+    m_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+}
+
+UdpNetworkManager::~UdpNetworkManager()
+{}
+
+std::string UdpNetworkManager::print() {
+    std::stringstream stream;
+    stream << "UdpNetworkManager: " << "[" << "FIXME" << "]";
+    return stream.str();
 }
