@@ -34,8 +34,9 @@ tags:
 	ctags *.cpp *.hpp
 
 test: all
-	(cd t && make clean && make run MDEBUG=$(MDEBUG))
+	cd t && make clean && make run MDEBUG=$(MDEBUG)
 
 clean:
 	rm -f *.a *.o
-	(cd t && make clean)
+	cd t && make clean
+	cd ../mikelibc && make clean
