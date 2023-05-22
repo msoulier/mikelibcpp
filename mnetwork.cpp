@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "mnetwork.hpp"
+#include "mnet.h"
 
 /*
  * NetworkManager
@@ -92,56 +93,16 @@ TcpNetworkManager::~TcpNetworkManager()
 SESSIONID TcpNetworkManager::connect_to(std::string host, std::string port)
 {
     set_mode(NetworkManagerMode::CLIENT);
+    SESSIONID rv;
 
-    struct addrinfo hints;
-    struct addrinfo *result = NULL;
-    struct addrinfo *rp = NULL;
-    int s, rv;
-    struct sockaddr_in clientsock;
-    socklen_t clientsock_len = sizeof(struct sockaddr_in);
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET; // AF_UNSPEC for v4 or v6
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = 0;
-    hints.ai_protocol = IPPROTO_TCP;
-
-    s = getaddrinfo(host.c_str(), port.c_str(), &hints, &result);
-    if (s != 0) {
-        rv = -1;
-        goto CLEANUP;
-    }
-
-    for (rp = result; rp != NULL; rp = rp->ai_next) {
-        m_sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-        if (m_sockfd == -1)
-            continue;
-
-        if (connect(m_sockfd, rp->ai_addr, rp->ai_addrlen) < 0) {
-            perror("connect");
-            continue;
-        }
-
-        if (getsockname(m_sockfd, (struct sockaddr*)&clientsock, &clientsock_len) < 0) {
-            std::cerr << "failed to resolve local address info: " << strerror(errno) << std::endl;
-        }
-            //mlog.info() << "local port is " << ntohs(clientsock.sin_port) << std::endl;
-            
+    m_sockfd = connect_tcp_client((const char*)host.c_str(), (const char*)port.c_str());
+    if (m_sockfd < 0) {
+        rv = m_sockfd;
+    } else {
         // FIXME: set the m_bind_port after connecting
         m_sessionmap[++m_latest_sessionid] = m_sockfd;
-        break;
+        rv = m_latest_sessionid;
     }
-
-    if (rp == NULL) {
-        rv = -1;
-        goto CLEANUP;
-    }
-
-    rv = m_latest_sessionid;
-
-CLEANUP:
-    if (result != NULL)
-        freeaddrinfo(result);
     return rv;
 }
 
