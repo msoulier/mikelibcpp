@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-Wall --std=c++17 -I. -I../mikelibc
-OBJS=mlogger.o mnetwork.o
+CFLAGS=-Wall --std=c++17 -I. -I../mikelibc -I../mikelibc/libtai-0.60
+OBJS=mlogger.o mnetwork.o mnet.o mlogger.o
 LIBS=
 OS := $(shell uname -s)
 MDEBUG=0
@@ -14,12 +14,7 @@ ifeq ($(ASAN),1)
 	CFLAGS += -fsanitize=address
 endif
 
-all: libmike.a libmikecpp.a
-
-libmike.a:
-	cd ../mikelibc && make MDEBUG=$(MDEBUG)
-	cp ../mikelibc/libmike.a .
-	ar x libmike.a
+all: libmikecpp.a
 
 libmikecpp.a: $(OBJS) mqueue.hpp
 	ar rc libmikecpp.a *.o
@@ -27,7 +22,10 @@ libmikecpp.a: $(OBJS) mqueue.hpp
 mlogger.o: mlogger.cpp mlogger.hpp type_traits.hpp to_string.hpp
 	$(CC) $(CFLAGS) -c mlogger.cpp
 
-mnetwork.o:: mnetwork.hpp mlogger.hpp ../mikelibc/mnet.h ../mikelibc/mnet.c
+mnet.o: ../mikelibc/mnet.h ../mikelibc/mnet.c
+	$(CC) $(CFLAGS) -c ../mikelibc/mnet.c
+
+mnetwork.o:: mnetwork.hpp mlogger.hpp ../mikelibc/mnet.h
 	$(CC) $(CFLAGS) -c mnetwork.cpp
 
 tags:
@@ -39,4 +37,3 @@ test: all
 clean:
 	rm -f *.a *.o
 	cd t && make clean
-	cd ../mikelibc && make clean
