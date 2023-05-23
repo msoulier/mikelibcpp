@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-Wall --std=c++17 -I. -I../mikelibc -I../mikelibc/libtai-0.60
-OBJS=mlogger.o mnetwork.o mnet.o mlogger.o
+OBJS=mlogger.o mnetwork.o mnet.o mlogger.o mlog.o
 LIBS=
 OS := $(shell uname -s)
 MDEBUG=0
@@ -22,7 +22,10 @@ libmikecpp.a: $(OBJS) mqueue.hpp
 mlogger.o: mlogger.cpp mlogger.hpp type_traits.hpp to_string.hpp
 	$(CC) $(CFLAGS) -c mlogger.cpp
 
-mnet.o: ../mikelibc/mnet.h ../mikelibc/mnet.c
+mlog.o: ../mikelibc/mlog.c ../mikelibc/mlog.h
+	$(CC) $(CFLAGS) -c ../mikelibc/mlog.c
+
+mnet.o: ../mikelibc/mnet.h ../mikelibc/mnet.c ../mikelibc/mlog.h
 	$(CC) $(CFLAGS) -c ../mikelibc/mnet.c
 
 mnetwork.o:: mnetwork.hpp mlogger.hpp ../mikelibc/mnet.h
