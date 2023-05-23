@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall --std=c++17 -I. -I../mikelibc -I../mikelibc/libtai-0.60
+CFLAGS=-Wall --std=c++17 -I. -I../mikelibc
 OBJS=mlogger.o mnetwork.o mnet.o mlogger.o mlog.o
 LIBS=
 OS := $(shell uname -s)
