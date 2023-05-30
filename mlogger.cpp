@@ -361,14 +361,14 @@ MLogger::MLogger(std::string name)
     , m_critical_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::critical, "CRITICAL", m_handlers))
 {
     m_handle = get_mlogger(MLOG_STDERR, MLOG_INFO, LOCNOZONE);
-    register_mlog_callback(g_handle, (mlog_cb_t)&Callback, (void *)this);
+    register_mlog_callback(m_handle, (mlog_cb_t)&Callback, (void *)this);
 }
 
 MLogger::MLogger() : MLogger("No name") { }
 
 MLogger::~MLogger() {
     clearHandlers();
-    shutdown_mlogger(g_handle);
+    shutdown_mlogger(m_handle);
 }
 
 // Static method as a callback for mikelibc's logger to call
@@ -430,7 +430,7 @@ void MLogger::setLevel(MLoggerVerbosity level) {
         default:
             fprintf(stderr, "unsupported log severity: %d\n", level);
     }
-    setloggersev(g_handle, mlog_level);
+    setloggersev(m_handle, mlog_level);
 }
 
 MLoggerEmitter& MLogger::trace() {
