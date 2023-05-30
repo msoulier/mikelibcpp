@@ -337,10 +337,6 @@ void MLoggerEmitter::setLevel(MLoggerVerbosity level) {
     m_level = level;
 }
 
-MLoggerVerbosity MLogger::getLevel() {
-    return m_level;
-}
-
 const std::string MLoggerEmitter::localDateTime() {
     const char *format = "%b %d %Y @ %X %Z";
     std::time_t t = std::time(NULL);
@@ -360,14 +356,50 @@ MLogger::MLogger(std::string name)
     , m_trace_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::trace, "TRACE", m_handlers))
     , m_debug_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::debug, "DEBUG", m_handlers))
     , m_info_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::info, "INFO", m_handlers))
-    , m_warn_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::warn, "WARN", m_handlers))
+    , m_warning_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::warning, "WARN", m_handlers))
     , m_error_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::error, "ERROR", m_handlers))
-    { }
+    , m_critical_emitter(MLoggerEmitter(m_buffer, m_mutex, m_ostream, MLoggerVerbosity::critical, "CRITICAL", m_handlers))
+{
+    m_handle = get_mlogger(MLOG_STDERR, MLOG_INFO, LOCNOZONE);
+    register_mlog_callback(g_handle, (mlog_cb_t)&Callback, (void *)this);
+}
 
 MLogger::MLogger() : MLogger("No name") { }
 
 MLogger::~MLogger() {
     clearHandlers();
+    shutdown_mlogger(g_handle);
+}
+
+// Static method as a callback for mikelibc's logger to call
+void MLogger::Callback(logseverity_t severity, char *message, void *data) {
+    MLogger *logger = (MLogger *)data;
+    switch (severity) {
+        case MLOG_TRACE:
+            logger->trace(message);
+            break;
+        case MLOG_DEBUG:
+            logger->debug(message);
+            break;
+        case MLOG_INFO:
+            logger->info(message);
+            break;
+        case MLOG_WARNING:
+            logger->warning(message);
+            break;
+        case MLOG_ERROR:
+            logger->error(message);
+            break;
+        case MLOG_CRITICAL:
+            logger->critical(message);
+            break;
+        default:
+            fprintf(stderr, "unsupported log severity: %s\n", message);
+    }
+}
+
+MLoggerVerbosity MLogger::getLevel() {
+    return m_level;
 }
 
 void MLogger::setLevel(MLoggerVerbosity level) {
@@ -376,8 +408,29 @@ void MLogger::setLevel(MLoggerVerbosity level) {
     m_trace_emitter.setLevel(level);
     m_debug_emitter.setLevel(level);
     m_info_emitter.setLevel(level);
-    m_warn_emitter.setLevel(level);
+    m_warning_emitter.setLevel(level);
     m_error_emitter.setLevel(level);
+    logseverity_t mlog_level = MLOG_TRACE;
+    switch (level) {
+        case MLoggerVerbosity::trace:
+            mlog_level = MLOG_TRACE;
+            break;
+        case MLoggerVerbosity::debug:
+            mlog_level = MLOG_DEBUG;
+            break;
+        case MLoggerVerbosity::info:
+            mlog_level = MLOG_INFO;
+            break;
+        case MLoggerVerbosity::warning:
+            mlog_level = MLOG_WARNING;
+            break;
+        case MLoggerVerbosity::error:
+            mlog_level = MLOG_ERROR;
+            break;
+        default:
+            fprintf(stderr, "unsupported log severity: %d\n", level);
+    }
+    setloggersev(g_handle, mlog_level);
 }
 
 MLoggerEmitter& MLogger::trace() {
@@ -392,8 +445,8 @@ MLoggerEmitter& MLogger::info() {
     return m_info_emitter;
 }
 
-MLoggerEmitter& MLogger::warn() {
-    return m_warn_emitter;
+MLoggerEmitter& MLogger::warning() {
+    return m_warning_emitter;
 }
 
 MLoggerEmitter& MLogger::error() {
@@ -421,4 +474,8 @@ void MLogger::setDefaults() {
 
 const std::vector<MLoggerHandler*>& MLogger::getHandlers() const {
     return m_handlers;
+}
+
+void
+mlog_callback(logseverity_t severity, const char *message, void *data) {
 }

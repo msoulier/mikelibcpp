@@ -21,6 +21,7 @@
 #include <type_traits>
 
 #include "to_string.hpp"
+#include "mlog.h"
 
 #define MLOGGER_BUFSIZE 4096
 
@@ -28,8 +29,9 @@ enum MLoggerVerbosity {
     trace=0,
     debug=10,
     info=20,
-    warn=30,
-    error=40
+    warning=30,
+    error=40,
+    critical=50
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -190,9 +192,13 @@ public:
     // Convenience methods for info level log with iostream.
     MLoggerEmitter& info();
     // Convenience methods for warning level log with iostream.
-    MLoggerEmitter& warn();
+    MLoggerEmitter& warning();
     // Convenicence methods for error level log with iostream.
     MLoggerEmitter& error();
+    // Convenicence methods for critical level log with iostream.
+    MLoggerEmitter& critical();
+    // Static method for mikelibc to call.
+    static void Callback(logseverity_t severity, char *message, void *data);
     // Log printf style at called level.
     template <typename ...Args>
     void trace(Args&&... args) {
@@ -213,14 +219,20 @@ public:
     }
 
     template <typename ...Args>
-    void warn(Args&&... args) {
-        m_warn_emitter << this->print(std::forward<Args>(args)...)
+    void warning(Args&&... args) {
+        m_warning_emitter << this->print(std::forward<Args>(args)...)
                         << std::endl;
     }
 
     template <typename ...Args>
     void error(Args&&... args) {
         m_error_emitter << this->print(std::forward<Args>(args)...)
+                        << std::endl;
+    }
+
+    template <typename ...Args>
+    void critical(Args&&... args) {
+        m_critical_emitter << this->print(std::forward<Args>(args)...)
                         << std::endl;
     }
 
@@ -249,13 +261,18 @@ private:
     // Info handler
     MLoggerEmitter m_info_emitter;
     // Warn handler
-    MLoggerEmitter m_warn_emitter;
+    MLoggerEmitter m_warning_emitter;
     // Error handler
     MLoggerEmitter m_error_emitter;
+    // Error handler
+    MLoggerEmitter m_critical_emitter;
     // The thread-safe buffer where the logs are composed.
     std::stringstream m_buffer;
     // A vector of MLoggerHandler* objects.
     std::vector<MLoggerHandler*> m_handlers;
+
+    // The underlying mikelibc logger handler.
+    mlog_handle_t m_handle;
 
     template<typename T>
     struct is_string_obj_ : std::false_type {};
