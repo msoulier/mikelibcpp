@@ -5,6 +5,7 @@ LIBS=
 OS := $(shell uname -s)
 MDEBUG=0
 ASAN=0
+MTHREADS=1
 
 ifeq ($(MDEBUG),1)
 	CFLAGS += -ggdb
@@ -12,6 +13,10 @@ endif
 
 ifeq ($(ASAN),1)
 	CFLAGS += -fsanitize=address
+endif
+
+ifeq ($(MTHREADS),1)
+    CFLAGS += -DMIKELIBC_THREADS
 endif
 
 all: libmikecpp.a
