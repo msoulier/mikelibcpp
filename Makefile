@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-Wall --std=c++17 -I. -I../mikelibc
-OBJS=mlogger.o mnetwork.o mnet.o mlogger.o mlog.o
+OBJS=mlogger.o mnetwork.o mnet.o mlogger.o mlog.o mcrypto.o
 LIBS=
 OS := $(shell uname -s)
 MDEBUG=0
@@ -26,6 +26,9 @@ libmikecpp.a: $(OBJS) mqueue.hpp
 
 mlogger.o: mlogger.cpp mlogger.hpp type_traits.hpp to_string.hpp
 	$(CC) $(CFLAGS) -c mlogger.cpp
+
+mcrypto.o: mcrypto.cpp mcrypto.hpp
+	$(CC) $(CFLAGS) -c mcrypto.cpp
 
 mlog.o: ../mikelibc/mlog.c ../mikelibc/mlog.h
 	$(CC) $(CFLAGS) -c ../mikelibc/mlog.c
