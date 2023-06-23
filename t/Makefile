@@ -1,7 +1,7 @@
 CC=g++
-CFLAGS=-Wall --std=c++17 -I. -I..
-LIBS=-L.. -lmikecpp -lcppunit -lpthread
-OBJS=safequeuetest.o test.o loggertest.o
+CFLAGS=-Wall --std=c++17 -I. -I.. -I../../mikelibc
+LIBS=-L.. -lmikecpp -lcppunit -lpthread -lssl -lcrypto
+OBJS=safequeuetest.o test.o loggertest.o cryptotest.o
 OS := $(shell uname -s)
 MDEBUG=0
 ASAN=0
@@ -18,6 +18,9 @@ all: test
 
 loggertest.o: loggertest.cpp loggertest.hpp ../mlogger.hpp
 	$(CC) $(CFLAGS) -c loggertest.cpp
+
+cryptotest.o: cryptotest.cpp cryptotest.hpp ../mcrypto.hpp
+	$(CC) $(CFLAGS) -c cryptotest.cpp
 
 safequeuetest.o: safequeuetest.cpp safequeuetest.hpp ../mqueue.hpp
 	$(CC) $(CFLAGS) -c safequeuetest.cpp

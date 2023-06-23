@@ -62,7 +62,7 @@ void LoggerTest::testFileHandler(void) {
     std::string badstuff("bad shit happened");
 
     m_logger.info() << "This is a log entry" << std::endl;
-    m_logger.warn() << "error: " << badstuff << std::endl;
+    m_logger.warning() << "error: " << badstuff << std::endl;
 
     m_logger.clearHandlers();
 
@@ -91,7 +91,7 @@ void LoggerTest::testFileHandler(void) {
         500 * 1024 * 1024, 300, true);
 
     m_logger.info("this is a log entry");
-    m_logger.warn("error: %s", badstuff);
+    m_logger.warning("error: %s", badstuff);
 
     m_logger.clearHandlers();
 
