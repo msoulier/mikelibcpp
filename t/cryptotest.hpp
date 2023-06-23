@@ -10,10 +10,12 @@
 class CryptoTest : public CppUnit::TestCase
 {
     CPPUNIT_TEST_SUITE( CryptoTest );
-    CPPUNIT_TEST( testSimple );
+    CPPUNIT_TEST( testBase64 );
+    CPPUNIT_TEST( testEncryptDecryptAES );
     CPPUNIT_TEST_SUITE_END();
 public:
-    void testSimple();
+    void testBase64();
+    void testEncryptDecryptAES();
 };
 
 #endif
