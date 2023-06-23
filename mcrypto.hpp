@@ -1,6 +1,9 @@
 #ifndef _BASE64_H_
 #define _BASE64_H_
 
+/*
+ * A simple class to encode/decode a string using base64.
+ */
 class Base64Encoder
 {
 public:
@@ -10,6 +13,9 @@ public:
     std::string decode(std::string &ciphertext);
 };
 
+/*
+ * A simple class to encode/decode a string using AES 256.
+ */
 class AESEncryptor
 {
 public:
