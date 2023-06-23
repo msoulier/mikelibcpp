@@ -8,7 +8,7 @@ void StringTest::testBasic(void) {
     MString mystring("Hello, World!");
     MString other = mystring;
 
-    std::cout << "mystring is " << mystring.str() << std::endl;
+    std::cout << "mystring is " << mystring << std::endl;
 
     std::vector<std::string> pieces = mystring.split(",");
 

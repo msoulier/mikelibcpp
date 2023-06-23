@@ -54,3 +54,8 @@ std::vector<std::string> MString::split(std::string on)
     }
     return splitlist;
 }
+
+std::ostream& operator<<(std::ostream& os, const MString& me) {
+    os << me.m_string;
+    return os;
+}

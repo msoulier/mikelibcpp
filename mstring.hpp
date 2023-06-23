@@ -15,6 +15,8 @@ public:
     std::string str(void);
     std::vector<std::string> split(std::string on);
 
+    friend std::ostream& operator<<(std::ostream& os, const MString& me);
+
 private:
     std::string m_string;
 };
