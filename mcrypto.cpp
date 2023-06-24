@@ -2,7 +2,6 @@
 #include <vector>
 
 #include "mcrypto.hpp"
-#include "mutil.h"
 
 /*
  * Base64Encoder
@@ -36,9 +35,12 @@ std::string Base64Encoder::decode(std::string &ciphertext)
 /*
  * AESEncryptor
  */
-AESEncryptor::AESEncryptor(std::string key, std::string iv)
+AESEncryptor::AESEncryptor(std::string key,
+                           std::string iv,
+                           const EVP_CIPHER *cipher_type)
     : m_key(key)
     , m_iv(iv)
+    , m_cipher_type(cipher_type)
 {}
 
 AESEncryptor::~AESEncryptor(void)
@@ -46,8 +48,9 @@ AESEncryptor::~AESEncryptor(void)
 
 std::string AESEncryptor::encrypt(std::string plaintext)
 {
-    unsigned char *encrypted = encrypt_aes((unsigned char *)m_key.c_str(),
+    unsigned char *encrypted = encrypt_ssl((unsigned char *)m_key.c_str(),
                                            (unsigned char *)m_iv.c_str(),
+                                           m_cipher_type,
                                            (unsigned char *)plaintext.c_str(),
                                            plaintext.size());
     if (encrypted == NULL) {
@@ -59,8 +62,9 @@ std::string AESEncryptor::encrypt(std::string plaintext)
 
 std::string AESEncryptor::decrypt(std::string ciphertext)
 {
-    unsigned char *unencrypted = decrypt_aes((unsigned char *)m_key.c_str(),
+    unsigned char *unencrypted = decrypt_ssl((unsigned char *)m_key.c_str(),
                                              (unsigned char *)m_iv.c_str(),
+                                             m_cipher_type,
                                              (unsigned char *)ciphertext.c_str(),
                                              ciphertext.size());
     if (unencrypted == NULL) {
