@@ -53,4 +53,8 @@ test: all
 
 clean:
 	rm -f *.a *.o
+	rm -rf doc
 	cd t && make clean
+
+doc:
+	doxygen Doxyfile
