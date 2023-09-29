@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-Wall --std=c++17 -I. -I../mikelibc
-OBJS=mlogger.o mnetwork.o mnet.o mlogger.o mlog.o mcrypto.o mutil.o mstring.o
+CFLAGS=-Wall --std=c++17 -I. -I../mikelibc -D_GNU_SOURCE
+OBJS=mlogger.o mnetwork.o mnet.o mlogger.o mlog.o mcrypto.o mutil.o mstring.o mdebug.o
 LIBS=
 OS := $(shell uname -s)
 MDEBUG=0
@@ -41,6 +41,9 @@ mnet.o: ../mikelibc/mnet.h ../mikelibc/mnet.c ../mikelibc/mlog.h
 
 mutil.o: ../mikelibc/mutil.h ../mikelibc/mutil.c ../mikelibc/mlog.h
 	$(CC) $(CFLAGS) -c ../mikelibc/mutil.c
+
+mdebug.o: ../mikelibc/mdebug.h ../mikelibc/mdebug.c
+	$(CC) $(CFLAGS) -c ../mikelibc/mdebug.c
 
 mnetwork.o:: mnetwork.hpp mlogger.hpp ../mikelibc/mnet.h
 	$(CC) $(CFLAGS) -c mnetwork.cpp

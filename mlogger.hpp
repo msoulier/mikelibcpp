@@ -22,6 +22,7 @@
 
 #include "to_string.hpp"
 #include "mlog.h"
+#include "mdebug.h"
 
 #define MLOGGER_BUFSIZE 4096
 
