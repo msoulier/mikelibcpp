@@ -2,6 +2,7 @@
 #include <string>
 
 #include "mstring.hpp"
+#include "mutil.h"
 
 MString::MString()
 {}
@@ -53,6 +54,14 @@ std::vector<std::string> MString::split(std::string on)
         current_pos = pos + on.size();
     }
     return splitlist;
+}
+
+std::string MString::hexdigest(void) {
+    char *c_hex = ::hexdigest((unsigned char*)m_string.c_str(),
+                              m_string.length());
+    std::string hex(c_hex);
+    free(c_hex);
+    return hex;
 }
 
 std::ostream& operator<<(std::ostream& os, const MString& me) {

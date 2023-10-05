@@ -14,6 +14,7 @@ public:
     ~MString();
     std::string str(void);
     std::vector<std::string> split(std::string on);
+    std::string hexdigest(void);
 
     friend std::ostream& operator<<(std::ostream& os, const MString& me);
 
