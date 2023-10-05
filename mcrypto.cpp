@@ -57,6 +57,7 @@ std::string AESEncryptor::encrypt(std::string plaintext)
         throw std::runtime_error("encrypt_aes returned a NULL");
     }
     std::string response((char *)encrypted);
+    free(encrypted);
     return response;
 }
 
@@ -71,5 +72,6 @@ std::string AESEncryptor::decrypt(std::string ciphertext)
         throw std::runtime_error("decrypt_aes returned a NULL");
     }
     std::string response((char *)unencrypted);
+    free(unencrypted);
     return response;
 }
