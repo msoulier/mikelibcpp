@@ -19,6 +19,7 @@ std::string Base64Encoder::encode(std::string &plaintext)
         throw std::runtime_error("base64_encode returned a NULL");
     }
     std::string response(encoded);
+    free(encoded);
     return response;
 }
 
@@ -29,6 +30,7 @@ std::string Base64Encoder::decode(std::string &ciphertext)
         throw std::runtime_error("base64_encode returned a NULL");
     }
     std::string response(decoded);
+    free(decoded);
     return response;
 }
 

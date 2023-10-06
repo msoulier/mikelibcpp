@@ -1,18 +1,31 @@
 #include <thread>
 #include <iostream>
+#include <vector>
+#include <stdio.h>
 
 #include "cryptotest.hpp"
 #include "mutil.h"
 
 void CryptoTest::testBase64(void) {
-    std::string plaintext{ "this is a simple string" };
-    char *b64 = base64_encode(plaintext.c_str(), plaintext.size());
-    CPPUNIT_ASSERT( b64 != NULL );
-    std::string b64string(b64);
-    char *decoded = base64_decode(b64string.c_str(), b64string.size());
-    CPPUNIT_ASSERT( decoded != NULL );
-    std::string decoded_string(decoded);
-    CPPUNIT_ASSERT( decoded_string == plaintext );
+    std::vector<std::string> inputs{
+        "this is an input string",
+        "this is a simple string",
+        "foo",
+        "a very long string that hopefully comes back from encoding",
+        "should I have some binary data here?",
+        "bar"
+        };
+
+    Base64Encoder encoder;
+
+    for (auto input : inputs) {
+        printf("b64 encoding '%s'\n", input.c_str());
+        std::string encoded = encoder.encode(input);
+        printf("b64 encoded: %s\n", encoded.c_str());
+        std::string decoded = encoder.decode(encoded);
+        printf("b64 decoded to '%s'\n", decoded.c_str());
+        CPPUNIT_ASSERT( decoded == input );
+    }
 }
 
 void CryptoTest::testEncryptDecryptAES(void) {
