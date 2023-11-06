@@ -8,7 +8,7 @@ ASAN=0
 MTHREADS=1
 
 ifeq ($(MDEBUG),1)
-	CFLAGS += -ggdb
+	CFLAGS += -ggdb -DMDEBUG=1
 endif
 
 ifeq ($(ASAN),1)

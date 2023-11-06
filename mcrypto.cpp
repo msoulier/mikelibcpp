@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <string.h>
 
 #include "mcrypto.hpp"
+#include "mdebug.h"
 
 /*
  * Base64Encoder
@@ -25,11 +27,16 @@ std::string Base64Encoder::encode(std::string &plaintext)
 
 std::string Base64Encoder::decode(std::string &ciphertext)
 {
-    char *decoded = base64_decode(ciphertext.c_str(), ciphertext.size());
+    size_t output_size = 0;
+    char *decoded = base64_decode(ciphertext.c_str(), ciphertext.size(), &output_size);
+    mdbgf("decode: input ciphertext is %s, %d bytes long\n",
+        ciphertext.c_str(), ciphertext.size());
+    mdbgf("b64 decoded ciphertext, size is %d bytes\n", output_size);
     if (decoded == NULL) {
         throw std::runtime_error("base64_encode returned a NULL");
     }
     std::string response(decoded);
+    mdbgf("b64 decoded response is %d long\n", response.size());
     free(decoded);
     return response;
 }

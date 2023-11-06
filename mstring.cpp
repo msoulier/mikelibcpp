@@ -56,8 +56,8 @@ std::vector<std::string> MString::split(std::string on)
     return splitlist;
 }
 
-std::string MString::hexdigest(void) {
-    char *c_hex = ::hexdigest((unsigned char*)m_string.c_str(),
+std::string MString::tohex(void) {
+    char *c_hex = ::tohex((unsigned char*)m_string.c_str(),
                               m_string.length());
     std::string hex(c_hex);
     free(c_hex);
