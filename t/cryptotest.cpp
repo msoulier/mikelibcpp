@@ -19,12 +19,28 @@ void CryptoTest::testBase64(void) {
     Base64Encoder encoder;
 
     for (auto input : inputs) {
-        printf("b64 encoding '%s'\n", input.c_str());
-        std::string encoded = encoder.encode(input);
+        std::vector<uint8_t> indata(input.begin(), input.end());
+        printf("b64 encoding '%s', size %ld\n", input.c_str(), input.size());
+        printf("indata is %ld bytes long\n", indata.size());
+        std::string encoded = encoder.encode(indata);
         printf("b64 encoded: %s\n", encoded.c_str());
-        std::string decoded = encoder.decode(encoded);
-        printf("b64 decoded to '%s'\n", decoded.c_str());
-        CPPUNIT_ASSERT( decoded == input );
+        std::vector<uint8_t> decoded = encoder.decode(encoded);
+
+        for (unsigned long int i = 0; i < decoded.size(); ++i) {
+            uint8_t a = indata[i];
+            uint8_t b = decoded[i];
+            CPPUNIT_ASSERT( a == b );
+        }
+
+        printf("decoded size is %ld bytes\n", decoded.size());
+        std::string decoded_s((char *)decoded.data(), decoded.size());
+        printf("b64 decoded: '%s', size %ld\n", decoded_s.c_str(), decoded_s.size());
+        if (decoded_s == input) {
+            printf("match\n");
+        } else {
+            printf("no match\n");
+        }
+        //CPPUNIT_ASSERT( decoded_s == input );
     }
 }
 

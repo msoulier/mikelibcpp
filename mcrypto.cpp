@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string.h>
+#include <cstring>
 
 #include "mcrypto.hpp"
 #include "mdebug.h"
@@ -14,28 +15,32 @@ Base64Encoder::Base64Encoder(void)
 Base64Encoder::~Base64Encoder(void)
 {}
 
-std::string Base64Encoder::encode(std::string &plaintext)
+std::string Base64Encoder::encode(std::vector<unsigned char> &data)
 {
-    char *encoded = base64_encode(plaintext.c_str(), plaintext.size());
+    size_t encoded_size = 0;
+    char *encoded = base64_encode((const unsigned char*)data.data(), data.size(), &encoded_size);
     if (encoded == NULL) {
         throw std::runtime_error("base64_encode returned a NULL");
     }
     std::string response(encoded);
+
     free(encoded);
     return response;
 }
 
-std::string Base64Encoder::decode(std::string &ciphertext)
+std::vector<unsigned char> Base64Encoder::decode(std::string &b64string)
 {
     size_t output_size = 0;
-    char *decoded = base64_decode(ciphertext.c_str(), ciphertext.size(), &output_size);
-    mdbgf("decode: input ciphertext is %s, %d bytes long\n",
-        ciphertext.c_str(), ciphertext.size());
-    mdbgf("b64 decoded ciphertext, size is %d bytes\n", output_size);
+    unsigned char *decoded = base64_decode(b64string.c_str(), b64string.size(), &output_size);
+    mdbgf("b64 decoded b64string, size is %d bytes\n", output_size);
+    mdbgf("strlen reports %d bytes\n", strlen(decoded));
     if (decoded == NULL) {
         throw std::runtime_error("base64_encode returned a NULL");
     }
-    std::string response(decoded);
+    std::vector<unsigned char> response;
+    response.resize( output_size );
+    std::memcpy(&response[0], decoded, output_size);
+
     mdbgf("b64 decoded response is %d long\n", response.size());
     free(decoded);
     return response;

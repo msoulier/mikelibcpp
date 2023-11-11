@@ -11,8 +11,8 @@ class Base64Encoder
 public:
     Base64Encoder(void);
     ~Base64Encoder(void);
-    std::string encode(std::string &plaintext);
-    std::string decode(std::string &ciphertext);
+    std::string encode(std::vector<unsigned char> &data);
+    std::vector<unsigned char> decode(std::string &b64string);
 };
 
 /*
