@@ -20,7 +20,7 @@ void CryptoTest::testBase64(void) {
 
     for (auto input : inputs) {
         std::vector<uint8_t> indata(input.begin(), input.end());
-        printf("b64 encoding '%s', size %ld\n", input.c_str(), input.size());
+        printf("b64 encoding '%s', size %ld\n", input.c_str(), indata.size());
         printf("indata is %ld bytes long\n", indata.size());
         std::string encoded = encoder.encode(indata);
         printf("b64 encoded: %s\n", encoded.c_str());

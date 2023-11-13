@@ -22,7 +22,7 @@ std::string Base64Encoder::encode(std::vector<unsigned char> &data)
     if (encoded == NULL) {
         throw std::runtime_error("base64_encode returned a NULL");
     }
-    std::string response(encoded);
+    std::string response(encoded, encoded_size);
 
     free(encoded);
     return response;
@@ -33,7 +33,7 @@ std::vector<unsigned char> Base64Encoder::decode(std::string &b64string)
     size_t output_size = 0;
     unsigned char *decoded = base64_decode(b64string.c_str(), b64string.size(), &output_size);
     mdbgf("b64 decoded b64string, size is %d bytes\n", output_size);
-    mdbgf("strlen reports %d bytes\n", strlen(decoded));
+    mdbgf("strlen reports %d bytes\n", strlen((char *)decoded));
     if (decoded == NULL) {
         throw std::runtime_error("base64_encode returned a NULL");
     }
