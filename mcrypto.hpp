@@ -1,7 +1,7 @@
 #ifndef _BASE64_H_
 #define _BASE64_H_
 
-#include "mutil.h"
+#include <openssl/evp.h>
 
 /*
  * A simple class to encode/decode a string using base64.

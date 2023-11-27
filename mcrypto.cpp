@@ -4,6 +4,7 @@
 #include <cstring>
 
 #include "mcrypto.hpp"
+#include "mutil.h"
 #include "mdebug.h"
 
 /*
@@ -17,12 +18,11 @@ Base64Encoder::~Base64Encoder(void)
 
 std::string Base64Encoder::encode(std::vector<unsigned char> &data)
 {
-    size_t encoded_size = 0;
-    char *encoded = base64_encode((const unsigned char*)data.data(), data.size(), &encoded_size);
+    char *encoded = base64_encode_openssl((const unsigned char*)data.data(), data.size());
     if (encoded == NULL) {
-        throw std::runtime_error("base64_encode returned a NULL");
+        throw std::runtime_error("base64_encode_openssl returned a NULL");
     }
-    std::string response(encoded, encoded_size);
+    std::string response(encoded);
 
     free(encoded);
     return response;
@@ -31,11 +31,11 @@ std::string Base64Encoder::encode(std::vector<unsigned char> &data)
 std::vector<unsigned char> Base64Encoder::decode(std::string &b64string)
 {
     size_t output_size = 0;
-    unsigned char *decoded = base64_decode(b64string.c_str(), b64string.size(), &output_size);
+    unsigned char *decoded = base64_decode_openssl(b64string.c_str(), &output_size);
     mdbgf("b64 decoded b64string, size is %d bytes\n", output_size);
     mdbgf("strlen reports %d bytes\n", strlen((char *)decoded));
     if (decoded == NULL) {
-        throw std::runtime_error("base64_encode returned a NULL");
+        throw std::runtime_error("base64_encode_openssl returned a NULL");
     }
     std::vector<unsigned char> response;
     response.resize( output_size );
