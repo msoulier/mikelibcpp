@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-Wall --std=c++17 -I. -I../mikelibc -D_GNU_SOURCE
-OBJS=mlogger.o mnetwork.o mnet.o mlogger.o mlog.o mcrypto.o mutil.o mstring.o mdebug.o
+OBJS=mlogger.o mnetwork.o mlogger.o mcrypto.o mstring.o
 LIBS=
 OS := $(shell uname -s)
 MDEBUG=0
@@ -21,7 +21,12 @@ endif
 
 all: libmikecpp.a
 
-libmikecpp.a: $(OBJS) mqueue.hpp
+libmike.a:
+	cd ../mikelibc && make MDEBUG=$(MDEBUG)
+	cp ../mikelibc/libmike.a .
+	ar x libmike.a
+
+libmikecpp.a: libmike.a $(OBJS) mqueue.hpp
 	ar rc libmikecpp.a *.o
 
 mlogger.o: mlogger.cpp mlogger.hpp type_traits.hpp to_string.hpp
@@ -33,19 +38,7 @@ mcrypto.o: mcrypto.cpp mcrypto.hpp
 mstring.o: mstring.cpp mstring.hpp
 	$(CC) $(CFLAGS) -c mstring.cpp
 
-mlog.o: ../mikelibc/mlog.c ../mikelibc/mlog.h
-	$(CC) $(CFLAGS) -c ../mikelibc/mlog.c
-
-mnet.o: ../mikelibc/mnet.h ../mikelibc/mnet.c ../mikelibc/mlog.h
-	$(CC) $(CFLAGS) -c ../mikelibc/mnet.c
-
-mutil.o: ../mikelibc/mutil.h ../mikelibc/mutil.c ../mikelibc/mlog.h
-	$(CC) $(CFLAGS) -c ../mikelibc/mutil.c
-
-mdebug.o: ../mikelibc/mdebug.h ../mikelibc/mdebug.c
-	$(CC) $(CFLAGS) -c ../mikelibc/mdebug.c
-
-mnetwork.o:: mnetwork.hpp mlogger.hpp ../mikelibc/mnet.h
+mnetwork.o:: mnetwork.hpp mlogger.hpp
 	$(CC) $(CFLAGS) -c mnetwork.cpp
 
 tags:
@@ -58,6 +51,7 @@ clean:
 	rm -f *.a *.o
 	rm -rf doc
 	cd t && make clean
+	cd ../mikelibc && make clean
 
 doc:
 	doxygen Doxyfile

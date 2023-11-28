@@ -31,7 +31,7 @@ safequeuetest.o: safequeuetest.cpp safequeuetest.hpp ../mqueue.hpp
 test.o: test.cpp
 	$(CC) $(CFLAGS) -c test.cpp
 
-test: $(OBJS) ../libmikecpp.a
+test: $(OBJS)
 	$(CC) $(CFLAGS) -o unittest $(OBJS) $(LIBS)
 
 run: clean test
