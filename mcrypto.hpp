@@ -11,8 +11,8 @@ class Base64Encoder
 public:
     Base64Encoder(void);
     ~Base64Encoder(void);
-    std::string encode(std::vector<unsigned char> &data);
-    std::vector<unsigned char> decode(std::string &b64string);
+    std::string encode(std::basic_string<unsigned char> &data);
+    std::basic_string<unsigned char> decode(std::string &b64string);
 };
 
 /*
@@ -23,12 +23,12 @@ public:
 class AESEncryptor
 {
 public:
-    AESEncryptor(std::basic_string<unsigned char> key,
-                 std::basic_string<unsigned char> iv,
+    AESEncryptor(std::basic_string<unsigned char> &key,
+                 std::basic_string<unsigned char> &iv,
                  const EVP_CIPHER *cipher_type = NULL);
     ~AESEncryptor(void);
-    std::basic_string<unsigned char> encrypt(std::string plaintext);
-    std::string decrypt(std::basic_string<unsigned char> ciphertext);
+    std::basic_string<unsigned char> encrypt(std::string &plaintext);
+    std::string decrypt(std::basic_string<unsigned char> &ciphertext);
 
 private:
     std::basic_string<unsigned char> m_key;

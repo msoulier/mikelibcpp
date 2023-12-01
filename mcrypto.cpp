@@ -16,9 +16,9 @@ Base64Encoder::Base64Encoder(void)
 Base64Encoder::~Base64Encoder(void)
 {}
 
-std::string Base64Encoder::encode(std::vector<unsigned char> &data)
+std::string Base64Encoder::encode(std::basic_string<unsigned char> &data)
 {
-    char *encoded = base64_encode_openssl((const unsigned char*)data.data(), data.size());
+    char *encoded = base64_encode_openssl(data.data(), data.size());
     if (encoded == NULL) {
         throw std::runtime_error("base64_encode_openssl returned a NULL");
     }
@@ -28,7 +28,7 @@ std::string Base64Encoder::encode(std::vector<unsigned char> &data)
     return response;
 }
 
-std::vector<unsigned char> Base64Encoder::decode(std::string &b64string)
+std::basic_string<unsigned char> Base64Encoder::decode(std::string &b64string)
 {
     size_t output_size = 0;
     unsigned char *decoded = base64_decode_openssl(b64string.c_str(), &output_size);
@@ -37,7 +37,7 @@ std::vector<unsigned char> Base64Encoder::decode(std::string &b64string)
     if (decoded == NULL) {
         throw std::runtime_error("base64_encode_openssl returned a NULL");
     }
-    std::vector<unsigned char> response;
+    std::basic_string<unsigned char> response;
     response.resize( output_size );
     std::memcpy(&response[0], decoded, output_size);
 
@@ -49,8 +49,8 @@ std::vector<unsigned char> Base64Encoder::decode(std::string &b64string)
 /*
  * AESEncryptor
  */
-AESEncryptor::AESEncryptor(std::basic_string<unsigned char> key,
-                           std::basic_string<unsigned char> iv,
+AESEncryptor::AESEncryptor(std::basic_string<unsigned char> &key,
+                           std::basic_string<unsigned char> &iv,
                            const EVP_CIPHER *cipher_type)
     : m_key(key)
     , m_iv(iv)
@@ -60,7 +60,7 @@ AESEncryptor::AESEncryptor(std::basic_string<unsigned char> key,
 AESEncryptor::~AESEncryptor(void)
 {}
 
-std::basic_string<unsigned char> AESEncryptor::encrypt(std::string plaintext)
+std::basic_string<unsigned char> AESEncryptor::encrypt(std::string &plaintext)
 {
     unsigned char *encrypted = encrypt_ssl(m_key.c_str(),
                                            m_iv.c_str(),
@@ -75,7 +75,7 @@ std::basic_string<unsigned char> AESEncryptor::encrypt(std::string plaintext)
     return response;
 }
 
-std::string AESEncryptor::decrypt(std::basic_string<unsigned char> ciphertext)
+std::string AESEncryptor::decrypt(std::basic_string<unsigned char> &ciphertext)
 {
     unsigned char *unencrypted = decrypt_ssl(m_key.c_str(),
                                              m_iv.c_str(),

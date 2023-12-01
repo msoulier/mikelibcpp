@@ -19,12 +19,12 @@ void CryptoTest::testBase64(void) {
     Base64Encoder encoder;
 
     for (auto input : inputs) {
-        std::vector<uint8_t> indata(input.begin(), input.end());
+        std::basic_string<unsigned char> indata(input.begin(), input.end());
         printf("b64 encoding '%s', size %ld\n", input.c_str(), indata.size());
         printf("indata is %ld bytes long\n", indata.size());
         std::string encoded = encoder.encode(indata);
         printf("b64 encoded: %s\n", encoded.c_str());
-        std::vector<uint8_t> decoded = encoder.decode(encoded);
+        std::basic_string<unsigned char> decoded = encoder.decode(encoded);
 
         for (unsigned long int i = 0; i < decoded.size(); ++i) {
             uint8_t a = indata[i];
