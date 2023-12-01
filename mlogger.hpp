@@ -275,31 +275,9 @@ private:
     // The underlying mikelibc logger handler.
     mlog_handle_t m_handle;
 
-    template<typename T>
-    struct is_string_obj_ : std::false_type {};
-
-    template<typename CharT, typename Traits, typename Allocator>
-    struct is_string_obj_<std::basic_string<CharT, Traits, Allocator>> : std::true_type {};
-
-    template<typename T>
-    struct is_string_obj : is_string_obj_<std::remove_reference_t<T>> {};
-
-    template<typename T>
-    static constexpr bool is_string_obj_v = is_string_obj<T>::value;
-
-    template<typename T>
-    std::enable_if_t<!is_string_obj_v<T>, T> to_printf_compatible(const T t) {
-        return t;
-    }
-
-    template<typename T>
-    std::enable_if_t<is_string_obj_v<T>, const char *> to_printf_compatible(const T &t) {
-        return t.data();
-    }
-
     template<typename ...Args>
     std::string print(const char *fmt, Args &&...args) {
-        std::tuple t = std::make_tuple(to_printf_compatible<Args>(args)...);
+        std::tuple t = std::make_tuple(to_string<Args>(args)...);
         return std::apply([fmt](auto ...args) {
             //printf(fmt, std::forward<decltype(args)>(args)...);
             char buffer[MLOGGER_BUFSIZE];

@@ -11,18 +11,14 @@
 
 #include "type_traits.hpp"
 
-// Convert std::strings to char* for standard sprintf handling.
 template<typename T>
-std::enable_if_t<std::is_same_v<T, std::string>, const char *> to_string(const T& data)
+auto to_string(const T &data)
 {
-    return data.data();
-}
-
-// Anything else, return untouched.
-template<typename T>
-std::enable_if_t<!std::is_same_v<T, std::string>, T> to_string(const T& data)
-{
-    return data;
+    if constexpr (is_string<T>::value) {
+        return data.c_str();
+    } else {
+        return data;
+    }
 }
 
 #endif
