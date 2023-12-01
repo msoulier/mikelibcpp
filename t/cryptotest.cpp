@@ -45,13 +45,13 @@ void CryptoTest::testBase64(void) {
 }
 
 void CryptoTest::testEncryptDecryptAES(void) {
-    std::string key{ "shhhdon'tttellanyone" };
-    std::string iv{ "123456789" };
+    std::basic_string<unsigned char> key = (unsigned char*)"shhhdon'tttellanyone";
+    std::basic_string<unsigned char> iv = (unsigned char*)"123456789";
     std::string plaintext("this is my secret password");
 
     AESEncryptor encryptor(key, iv);
 
-    std::string encrypted = encryptor.encrypt(plaintext);
+    std::basic_string<unsigned char> encrypted = encryptor.encrypt(plaintext);
 
     CPPUNIT_ASSERT( !encrypted.empty() );
 
