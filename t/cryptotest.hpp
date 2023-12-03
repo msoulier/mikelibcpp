@@ -12,10 +12,12 @@ class CryptoTest : public CppUnit::TestCase
     CPPUNIT_TEST_SUITE( CryptoTest );
     CPPUNIT_TEST( testBase64 );
     CPPUNIT_TEST( testEncryptDecryptAES );
+    CPPUNIT_TEST( testSha1 );
     CPPUNIT_TEST_SUITE_END();
 public:
     void testBase64();
     void testEncryptDecryptAES();
+    void testSha1();
 };
 
 #endif

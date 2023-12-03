@@ -16,6 +16,27 @@ public:
 };
 
 /*
+ * An enum to represent the strength of the SHA digest.
+ */
+enum SHAStrength {
+    sha1=0,
+    sha256=1
+};
+
+/*
+ * A simple class to generate SHA digests on input.
+ */
+class SHAEncoder
+{
+public:
+    SHAEncoder(SHAStrength strength=SHAStrength::sha1);
+    ~SHAEncoder(void);
+    std::basic_string<unsigned char> quickdigest(std::basic_string<unsigned char> in);
+private:
+    SHAStrength m_strength;
+};
+
+/*
  * A simple class to encode/decode a string using the provided cipher.
  * See EVP_CIPHER(3ssl) for all cipher types. If cipher_type is NULL,
  * EVP_aes_256_cfb8() will be used.

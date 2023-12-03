@@ -6,6 +6,22 @@
 #include "cryptotest.hpp"
 #include "mutil.h"
 
+void CryptoTest::testSha1(void) {
+    std::basic_string<unsigned char> input =
+        (unsigned char*)"this is an input string";
+    std::string digest("014eaac6f30e3957f6f6b60a5378761e1634dde5");
+
+    SHAEncoder encoder;
+
+    std::basic_string<unsigned char> output = encoder.quickdigest(input);
+    char *hex = tohex(output.c_str(), output.size());
+    std::string hex_str(hex, hex+output.size()*2);
+
+    std::cout << "hex_str is " << hex_str << std::endl;
+
+    CPPUNIT_ASSERT( hex_str == digest );
+}
+
 void CryptoTest::testBase64(void) {
     std::vector<std::string> inputs{
         "this is an input string",

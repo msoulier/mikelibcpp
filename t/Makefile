@@ -34,7 +34,7 @@ test.o: test.cpp
 test: $(OBJS)
 	$(CC) $(CFLAGS) -o unittest $(OBJS) $(LIBS)
 
-run: clean test
+run: test
 	rm -f /tmp/logfile*
 	./unittest
 

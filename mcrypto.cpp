@@ -47,6 +47,27 @@ std::basic_string<unsigned char> Base64Encoder::decode(std::string &b64string)
 }
 
 /*
+ * SHAEncoder
+ */
+SHAEncoder::SHAEncoder(SHAStrength strength)
+    : m_strength(strength)
+{
+    if (m_strength != SHAStrength::sha1) {
+        throw std::runtime_error("only sha1 is supported at this time");
+    }
+}
+
+SHAEncoder::~SHAEncoder(void) {}
+
+std::basic_string<unsigned char> SHAEncoder::quickdigest(std::basic_string<unsigned char> in) {
+    unsigned int cdata_length = 0;
+    unsigned char *cdata = digest_sha1(in.c_str(), in.size(), &cdata_length);
+    std::basic_string<unsigned char> data(cdata, cdata+cdata_length);
+    OPENSSL_free(cdata);
+    return data;
+}
+
+/*
  * AESEncryptor
  */
 AESEncryptor::AESEncryptor(std::basic_string<unsigned char> &key,
