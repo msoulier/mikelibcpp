@@ -14,7 +14,7 @@
 template<typename T>
 auto to_string(const T &data)
 {
-    if constexpr (is_string<T>::value) {
+    if constexpr (is_string<std::remove_reference_t<T>>::value) {
         return data.c_str();
     } else {
         return data;

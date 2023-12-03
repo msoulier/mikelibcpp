@@ -277,9 +277,11 @@ private:
 
     template<typename ...Args>
     std::string print(const char *fmt, Args &&...args) {
+        //mdbgf("in logger print with fmt '%s'\n", fmt);
         std::tuple t = std::make_tuple(to_string<Args>(args)...);
         return std::apply([fmt](auto ...args) {
             //printf(fmt, std::forward<decltype(args)>(args)...);
+            //printf("\n");
             char buffer[MLOGGER_BUFSIZE];
             int rv = snprintf(buffer,
                               MLOGGER_BUFSIZE,
