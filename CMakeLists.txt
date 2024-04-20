@@ -20,6 +20,6 @@ target_include_directories(mikecpp
     PUBLIC ${PROJECT_BINARY_DIR}
     PUBLIC ${PROJECT_SOURCE_DIR}/../mikelibc)
 
-target_link_libraries(mikecpp PRIVATE mike)
+target_link_libraries(mikecpp PUBLIC mike)
 
 set(CMAKE_CXX_COMPILER g++)
