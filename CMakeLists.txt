@@ -12,11 +12,14 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 
 configure_file(config.hpp.in config.hpp)
 
-add_library(mikecpp STATIC
-    mcrypto.cpp mlogger.cpp mnetwork.cpp mstring.cpp ${PROJECT_SOURCE_DIR}/../mikelibc/build/libmike.a)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../mikelibc dist)
+
+add_library(mikecpp STATIC mcrypto.cpp mlogger.cpp mnetwork.cpp mstring.cpp)
     
 target_include_directories(mikecpp
     PUBLIC ${PROJECT_BINARY_DIR}
     PUBLIC ${PROJECT_SOURCE_DIR}/../mikelibc)
+
+target_link_libraries(mikecpp PRIVATE mike)
 
 set(CMAKE_CXX_COMPILER g++)

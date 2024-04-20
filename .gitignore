@@ -3,4 +3,4 @@
 t/unittest
 *.swp
 core
-build/
+dist/
