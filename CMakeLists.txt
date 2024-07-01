@@ -9,6 +9,8 @@ project(mikelibcpp
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 configure_file(config.hpp.in config.hpp)
 
