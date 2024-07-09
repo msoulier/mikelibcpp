@@ -1,0 +1,4 @@
+// Version provided by cmake.
+#define MIKELIBCPP_VERSION_MAJOR @mikelibcpp_VERSION_MAJOR@
+#define MIKELIBCPP_VERSION_MINOR @mikelibcpp_VERSION_MINOR@
+#define MIKELIBCPP_VERSION_PATCH @mikelibcpp_VERSION_PATCH@
