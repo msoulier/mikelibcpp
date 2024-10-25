@@ -16,7 +16,9 @@ configure_file(config.hpp.in config.hpp)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../mikelibc dist)
 
-add_library(mikecpp STATIC mcrypto.cpp mlogger.cpp mnetwork.cpp mstring.cpp)
+file(GLOB SRC_FILES "*.cpp")
+
+add_library(mikecpp STATIC ${SRC_FILES})
     
 target_include_directories(mikecpp
     PUBLIC ${PROJECT_BINARY_DIR}
