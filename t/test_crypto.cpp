@@ -2,11 +2,12 @@
 #include <iostream>
 #include <vector>
 #include <stdio.h>
+#include <assert.h>
 
-#include "cryptotest.hpp"
+#include "test_crypto.hpp"
 #include "mutil.h"
 
-void CryptoTest::testSha1(void) {
+int CryptoTest::testSha1(void) {
     std::basic_string<unsigned char> input =
         (unsigned char*)"this is an input string";
     std::string digest("014eaac6f30e3957f6f6b60a5378761e1634dde5");
@@ -19,10 +20,12 @@ void CryptoTest::testSha1(void) {
 
     std::cout << "hex_str is " << hex_str << std::endl;
 
-    CPPUNIT_ASSERT( hex_str == digest );
+    assert( hex_str == digest );
+
+    return 0;
 }
 
-void CryptoTest::testBase64(void) {
+int CryptoTest::testBase64(void) {
     std::vector<std::string> inputs{
         "this is an input string",
         "this is a simple string",
@@ -45,7 +48,7 @@ void CryptoTest::testBase64(void) {
         for (unsigned long int i = 0; i < decoded.size(); ++i) {
             uint8_t a = indata[i];
             uint8_t b = decoded[i];
-            CPPUNIT_ASSERT( a == b );
+            assert( a == b );
         }
 
         printf("decoded size is %ld bytes\n", decoded.size());
@@ -56,11 +59,13 @@ void CryptoTest::testBase64(void) {
         } else {
             printf("no match\n");
         }
-        //CPPUNIT_ASSERT( decoded_s == input );
+        //assert( decoded_s == input );
     }
+
+    return 0;
 }
 
-void CryptoTest::testEncryptDecryptAES(void) {
+int CryptoTest::testEncryptDecryptAES(void) {
     std::basic_string<unsigned char> key = (unsigned char*)"shhhdon'tttellanyone";
     std::basic_string<unsigned char> iv = (unsigned char*)"123456789";
     std::string plaintext("this is my secret password");
@@ -69,16 +74,28 @@ void CryptoTest::testEncryptDecryptAES(void) {
 
     std::basic_string<unsigned char> encrypted = encryptor.encrypt(plaintext);
 
-    CPPUNIT_ASSERT( !encrypted.empty() );
+    assert( !encrypted.empty() );
 
     std::string decrypted = encryptor.decrypt(encrypted);
 
-    CPPUNIT_ASSERT( !decrypted.empty() );
+    assert( !decrypted.empty() );
 
     std::cout << "plaintext: " << plaintext << std::endl;
     std::cout << "decrypted: " << decrypted << std::endl;
 
-    CPPUNIT_ASSERT( decrypted.size() == plaintext.size() );
+    assert( decrypted.size() == plaintext.size() );
 
-    CPPUNIT_ASSERT( decrypted == plaintext );
+    assert( decrypted == plaintext );
+
+    return 0;
+}
+
+int
+main(void) {
+    CryptoTest test;
+    int rv = test.testBase64() &&
+        test.testEncryptDecryptAES() &&
+        test.testSha1();
+
+    return rv;
 }
