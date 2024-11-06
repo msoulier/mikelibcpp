@@ -1,10 +1,11 @@
 #include <thread>
 #include <iostream>
 #include <vector>
+#include <assert.h>
 
-#include "mstringtest.hpp"
+#include "test_mstring.hpp"
 
-void StringTest::testBasic(void) {
+int StringTest::testBasic(void) {
     MString mystring("Hello, World!");
     MString other = mystring;
 
@@ -16,7 +17,7 @@ void StringTest::testBasic(void) {
         std::cout << "piece: " << it << std::endl;
     }
 
-    CPPUNIT_ASSERT( pieces.size() == 2 );
+    assert( pieces.size() == 2 );
 
     mystring = "this:is:a:delimited:string";
     pieces = mystring.split(":");
@@ -25,5 +26,13 @@ void StringTest::testBasic(void) {
         std::cout << "piece: " << it << std::endl;
     }
 
-    CPPUNIT_ASSERT( pieces.size() == 5 );
+    assert( pieces.size() == 5 );
+
+    return 0;
+}
+
+int
+main(void) {
+    StringTest stest;
+    return stest.testBasic();
 }

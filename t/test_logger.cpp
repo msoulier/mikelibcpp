@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
-#include "loggertest.hpp"
+#include "test_logger.hpp"
 
 void LoggerTest::setUp() {
     m_logger.setDefaults();
@@ -14,8 +15,8 @@ void LoggerTest::tearDown() {
 // Silence unused variable warning - yuk
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
-void LoggerTest::testSimple(void) {
-    CPPUNIT_ASSERT( m_logger.getLevel() == MLoggerVerbosity::info );
+int LoggerTest::testSimple(void) {
+    assert( m_logger.getLevel() == MLoggerVerbosity::info );
     int count = 0;
     // Done with getHandlers to test that method.
     std::cout << "handlers:" << std::endl;
@@ -24,7 +25,7 @@ void LoggerTest::testSimple(void) {
         count++;
         std::cout << "    " << handler->print() << std::endl;
     }
-    CPPUNIT_ASSERT( count == 1 );
+    assert( count == 1 );
 
     m_logger.info() << "info using the iostream interface" << std::endl;
     m_logger.info("info using printf style interface");
@@ -38,11 +39,12 @@ void LoggerTest::testSimple(void) {
     m_logger.info() << mystring << " " << aninteger << std::endl;
     m_logger.info("mystring is %s, aninteger is %d", mystring, aninteger);
     m_logger.info("myother is %s, mycarr is %s", myother, mycarr);
+    return 0;
 }
 #pragma GCC diagnostic pop
 
 // Test file handler.
-void LoggerTest::testFileHandler(void) {
+int LoggerTest::testFileHandler(void) {
     m_logger.clearHandlers();
 
     system("rm -f /tmp/*.log");
@@ -57,7 +59,7 @@ void LoggerTest::testFileHandler(void) {
         count++;
         std::cout << "    " << handler->print() << std::endl;
     }
-    CPPUNIT_ASSERT( count == 1 );
+    assert( count == 1 );
 
     std::string badstuff("bad shit happened");
 
@@ -68,7 +70,7 @@ void LoggerTest::testFileHandler(void) {
 
     // Are the lines in the file?
     FILE *logfile = fopen("/tmp/logfile.log", "r");
-    CPPUNIT_ASSERT( logfile != NULL );
+    assert( logfile != NULL );
 
     count = 0;
     if (logfile != NULL) {
@@ -82,7 +84,7 @@ void LoggerTest::testFileHandler(void) {
         }
     }
     fclose(logfile);
-    CPPUNIT_ASSERT( count == 2 );
+    assert( count == 2 );
 
     system("rm -f /tmp/*.log");
 
@@ -108,5 +110,27 @@ void LoggerTest::testFileHandler(void) {
         }
     }
     fclose(logfile);
-    CPPUNIT_ASSERT( count == 2 );
+    assert( count == 2 );
+    return 0;
+}
+
+int
+main(void) {
+    LoggerTest ltest;
+
+    int rv = 0;
+
+    ltest.setUp();
+    rv = ltest.testSimple();
+    ltest.tearDown();
+
+    if (rv != 0) {
+        return rv;
+    }
+
+    ltest.setUp();
+    rv = ltest.testFileHandler();
+    ltest.tearDown();
+
+    return rv;
 }

@@ -7,8 +7,8 @@ function(create_test NAME)
 endfunction()
 
 create_test(crypto)
-#create_test(logger)
-#create_test(mstring)
-#create_test(safequeue)
+create_test(logger)
+create_test(mstring)
+create_test(safequeue)
 
 enable_testing()
