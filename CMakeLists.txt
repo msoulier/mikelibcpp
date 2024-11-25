@@ -11,6 +11,9 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Silence warning
+add_compile_options(-Wno-format-security)
+
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../mikelibc mikebuild)
