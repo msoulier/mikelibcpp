@@ -10,6 +10,7 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+#set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
 # Silence warning
 add_compile_options(-Wno-format-security)

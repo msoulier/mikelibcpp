@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <unistd.h>
 #include <string.h>
+#include <functional>
 
 #include "mlogger.hpp"
 
@@ -30,8 +31,19 @@ void MLoggerHandler::operator<< (std::string buffer)
     handle(buffer);
 }
 
+std::ostream& operator<< (std::ostream& os, const MLoggerHandler& me) {
+    const std::string out = me.identify();
+    os << out;
+    return os;
+}
+
 void MLoggerHandler::handle(std::string buffer)
 {
+    std::cerr << "This should never be run" << std::endl;
+    assert(0);
+}
+
+std::string MLoggerHandler::identify(void) const {
     std::cerr << "This should never be run" << std::endl;
     assert(0);
 }
@@ -53,6 +65,12 @@ MLoggerStderrHandler::~MLoggerStderrHandler()
 void MLoggerStderrHandler::handle(std::string buffer)
 {
     std::cerr << buffer << std::endl;
+}
+
+std::string MLoggerStderrHandler::identify(void) const
+{
+    std::string response("MLoggerStderrHandler");
+    return response;
 }
 
 std::string MLoggerStderrHandler::print(void)
@@ -278,6 +296,12 @@ void MLoggerFileHandler::handle(std::string buffer)
     }
 }
 
+std::string MLoggerFileHandler::identify(void) const
+{
+    std::string response("MLoggerFileHandler");
+    return response;
+}
+
 std::string MLoggerFileHandler::print(void)
 {
     std::stringstream result;
@@ -321,7 +345,7 @@ MLoggerEmitter::MLoggerEmitter(std::stringstream& buffer,
                                std::ostream& ostream,
                                MLoggerVerbosity threshold,
                                std::string prefix,
-                               std::vector<MLoggerHandler*> &handlers)
+                               std::vector<std::unique_ptr<MLoggerHandler>> &handlers)
     : m_buffer(buffer)
     , m_mutex(mutex)
     , m_level(MLoggerVerbosity::info)
@@ -454,10 +478,8 @@ MLoggerEmitter& MLogger::error() {
 }
 
 void MLogger::clearHandlers() {
-    // delete all handlers
-    for (auto handler : m_handlers) {
-        delete handler;
-    }
+    // We do not have to delete the handlers, the unique_ptr will take care
+    // of that.
     m_handlers.clear();
 }
 
@@ -472,10 +494,12 @@ void MLogger::setDefaults() {
     setLevel(MLoggerVerbosity::info);
 }
 
-const std::vector<MLoggerHandler*>& MLogger::getHandlers() const {
-    return m_handlers;
+void MLogger::printHandlers() {
+    for (auto&& handler: m_handlers) {
+        std::cout << *handler << std::endl;
+    }
 }
 
 void
-mlog_callback(logseverity_t severity, const char *message, void *data) {
+    mlog_callback(logseverity_t severity, const char *message, void *data) {
 }

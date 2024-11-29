@@ -19,6 +19,7 @@
 #include <tuple>
 #include <errno.h>
 #include <type_traits>
+#include <memory>
 
 #include "to_string.hpp"
 #include "mlog.h"
@@ -51,9 +52,11 @@ public:
     virtual ~MLoggerHandler() = default;
     // For iostream operations to the handler (ie. logs)
     void operator<< (std::string buffer);
+    friend std::ostream& operator<< (std::ostream& os, const MLoggerHandler& me);
     virtual std::string print(void);
 private:
     virtual void handle(std::string buffer);
+    virtual std::string identify(void) const;
 };
 
 /*
@@ -67,6 +70,7 @@ public:
     std::string print(void);
 private:
     void handle(std::string buffer);
+    std::string identify(void) const;
 };
 
 /*
@@ -95,6 +99,7 @@ private:
     size_t m_bytes_written;
 
     void handle(std::string buffer);
+    std::string identify(void) const;
     std::string rotation_filesize2s(void);
     std::string gettimesuffix(void);
     std::string getfilename(void);
@@ -114,12 +119,13 @@ public:
                    std::ostream& ostream,
                    MLoggerVerbosity threshold,
                    std::string prefix,
-                   std::vector<MLoggerHandler*> &handlers);
+                   std::vector<std::unique_ptr<MLoggerHandler>> &handlers);
     ~MLoggerEmitter();
     void setLevel(MLoggerVerbosity level);
 
     template <class T>
     // For handling << from any object.
+    // Here we add to the m_buffer. We are not printing it until we see an std::endl
     MLoggerEmitter& operator <<(T input) {
         // Only log if the level is set above our threshold.
         if (m_threshold >= m_level) {
@@ -134,12 +140,13 @@ public:
         return *this;
     }
     // For handling std::endl
+    // This should trigger flushing of the m_buffer to the ostream.
     std::ostream& operator <<(std::ostream& (*f)(std::ostream&)) {
         // Only log if the level is set above our threshold.
         if (m_threshold >= m_level) {
             std::lock_guard<std::mutex> lock(m_mutex);
             // Loop on the handlers and send the buffer to each.
-            for (auto handler : m_handlers) {
+            for (auto&& handler : m_handlers) {
                 *handler << m_buffer.str();
             }
             // Clear the buffer
@@ -163,7 +170,7 @@ private:
     // Return the current date and time as a localized string.
     const std::string localDateTime();
     // A reference to the MLogger class' vector of handlers.
-    std::vector<MLoggerHandler*>& m_handlers;
+    std::vector<std::unique_ptr<MLoggerHandler>>& m_handlers;
 };
 
 /*
@@ -180,8 +187,8 @@ public:
     MLogger(std::string name);
     ~MLogger();
     // Block copy constructor and assignment operator.
-    MLogger(MLogger& source) = delete;
-    MLogger& operator=(const MLogger& source) = delete;
+    //MLogger(MLogger& source) = delete;
+    //MLogger& operator=(const MLogger& source) = delete;
     // Set the current logging level
     void setLevel(MLoggerVerbosity level);
     // Get the current logging level
@@ -216,13 +223,13 @@ public:
     template <typename ...Args>
     void info(Args&&... args) {
         m_info_emitter << this->print(std::forward<Args>(args)...)
-                        << std::endl;
+                       << std::endl;
     }
 
     template <typename ...Args>
     void warning(Args&&... args) {
         m_warning_emitter << this->print(std::forward<Args>(args)...)
-                        << std::endl;
+                          << std::endl;
     }
 
     template <typename ...Args>
@@ -234,7 +241,7 @@ public:
     template <typename ...Args>
     void critical(Args&&... args) {
         m_critical_emitter << this->print(std::forward<Args>(args)...)
-                        << std::endl;
+                           << std::endl;
     }
 
     template <typename T, typename ...Args>
@@ -244,8 +251,8 @@ public:
     void clearHandlers();
     // Initialize the logger with default settings.
     void setDefaults();
-    // Return the handlers
-    const std::vector<MLoggerHandler*>& getHandlers() const;
+    // Just for debugging.
+    void printHandlers();
 private:
     // The logger name.
     std::string m_name;
@@ -269,8 +276,8 @@ private:
     MLoggerEmitter m_critical_emitter;
     // The thread-safe buffer where the logs are composed.
     std::stringstream m_buffer;
-    // A vector of MLoggerHandler* objects.
-    std::vector<MLoggerHandler*> m_handlers;
+    // A vector of std::unique_ptr<MLoggerHandler> objects.
+    std::vector<std::unique_ptr<MLoggerHandler>> m_handlers;
 
     // The underlying mikelibc logger handler.
     mlog_handle_t m_handle;
@@ -302,7 +309,8 @@ private:
 
 template <typename T, typename ...Args>
 void MLogger::addHandler(Args &&...args) {
-    m_handlers.push_back(new T(std::forward<Args>(args)...));
+    //m_handlers.push_back(new T(std::forward<Args>(args)...));
+    m_handlers.push_back(std::make_unique<T>(std::forward<Args>(args)...));
 }
 
 #endif /* mlogger_hpp */
