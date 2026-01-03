@@ -68,3 +68,34 @@ std::ostream& operator<<(std::ostream& os, const MString& me) {
     os << me.m_string;
     return os;
 }
+
+// General functions
+
+bool is_shell_metachar(unsigned char c) {
+    // Common shell metacharacters
+    const std::string metacharacters = "|&;()<>{}[]$`'\"\\*?~!#^ \t\n/";
+    return metacharacters.find(c) != std::string::npos;
+}
+
+std::string
+sane_elem(std::string& insane)
+{
+    std::string sane = insane;
+    // Convert to lower case.
+    std::transform(sane.begin(), sane.end(), sane.begin(),
+        [](unsigned char c){ return ::tolower(c); });
+    // Convert any consecutive spaces to an underscore.
+    std::transform(sane.begin(), sane.end(), sane.begin(),
+        [](unsigned char c){ return c == ' ' ? '_' : c; });
+    // Screen out any unwanted characters.
+    sane.erase(
+        std::remove_if(sane.begin(), sane.end(),
+            [](unsigned char c){ return c > 127; }),
+        sane.end());
+    sane.erase(
+        std::remove_if(sane.begin(), sane.end(), is_shell_metachar),
+        sane.end()
+    );
+
+    return sane;
+}

@@ -2,6 +2,8 @@
 #define MSTRING_HPP
 
 #include <vector>
+#include <string>
+#include <algorithm>
 
 class MString
 {
@@ -21,5 +23,14 @@ public:
 private:
     std::string m_string;
 };
+
+bool is_shell_metachar(unsigned char c);
+
+std::string
+sane_elem(std::string& insane);
+    // Test
+    //std::string insane = "Shitty Windows File&Name ∞ (too long)";
+    //std::cout << sane_elem(insane) << std::endl;
+    //exit(0);
 
 #endif
