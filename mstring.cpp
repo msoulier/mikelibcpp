@@ -73,7 +73,7 @@ std::ostream& operator<<(std::ostream& os, const MString& me) {
 
 bool is_shell_metachar(unsigned char c) {
     // Common shell metacharacters
-    const std::string metacharacters = "|&;()<>{}[]$`'\"\\*?~!#^ \t\n/";
+    const std::string metacharacters = ",|&;()<>{}[]$`'\"\\*?~!#^ \t\n/";
     return metacharacters.find(c) != std::string::npos;
 }
 
